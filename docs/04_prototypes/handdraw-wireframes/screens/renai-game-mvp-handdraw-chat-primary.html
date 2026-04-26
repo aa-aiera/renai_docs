@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renai MVP Hand-Drawn Chat And Conversion</title>
+  <link rel="stylesheet" href="../renai-game-mvp-handdraw.css">
+</head>
+<body>
+  <div class="page-shell">
+    <div class="topbar">
+      <div>
+        <p class="wire-label">Screen 03</p>
+        <h1>Chat + Conversion</h1>
+        <p class="lead">main chat sketch plus key states</p>
+      </div>
+      <div class="nav-links">
+        <a class="nav-chip" href="../renai-game-mvp-handdraw-index.html">Back to index</a>
+        <a class="nav-chip" href="./renai-game-mvp-handdraw-landing.html">Back to start</a>
+      </div>
+    </div>
+
+    <section class="paper section">
+      <p class="wire-label">Chat and gate</p>
+      <h2>ดูแชตหลักและจุดเปลี่ยนจาก guest ไปสู่ login ในหน้าเดียว</h2>
+      <p class="lead">โชว์เพียงสิ่งที่ช่วยให้คุยต่อได้และ key states ที่จำเป็น</p>
+    </section>
+
+    <section class="chat-layout chat-compact section">
+      <aside class="paper chat-rail">
+        <p class="wire-label">Threads rail</p>
+        <div class="thread-stack">
+          <article class="thread-card active">
+            <h3>Aira</h3>
+            <p>reply pending after a warm exchange</p>
+            <span class="pill">active</span>
+          </article>
+
+          <article class="thread-card">
+            <h3>Lyra</h3>
+            <p>not started yet</p>
+            <span class="pill">idle</span>
+          </article>
+
+          <article class="thread-card">
+            <h3>Nova</h3>
+            <p>ready to open</p>
+            <span class="pill">open</span>
+          </article>
+        </div>
+        <div class="sticky"><strong>Continuity:</strong> login ช่วยกลับมาคุยกับคนเดิม</div>
+      </aside>
+
+      <article class="paper chat-panel">
+        <div class="chat-head">
+          <div>
+            <p class="wire-label">Guest session</p>
+            <h3>Aira</h3>
+            <p>เหลือ 7 จาก 10 ข้อความ</p>
+          </div>
+          <div class="badge-row">
+            <span class="pill">guest 7/10</span>
+            <span class="pill">simple delay only</span>
+          </div>
+        </div>
+
+        <div class="message-stack">
+          <div class="message">
+            ฝนวันนี้ตกนุ่มมากจนฉันอยากปิดร้านเร็วขึ้นนิดหนึ่งแล้วนั่งฟังเพลงเฉย ๆ ถ้านายต้องเลือกเพลงเปิดตอนค่ำ เพลงแรกจะเป็นแนวไหน?<nobr></nobr>
+            <small>19:11</small>
+          </div>
+
+          <div class="message user">
+            คงเป็น lo-fi ไม่มีเนื้อร้อง ฟังแล้วเหมือนสมองได้หายใจหน่อยเวลางานเต็มไปหมด
+            <small>19:12</small>
+          </div>
+
+          <div class="message">
+            เข้าใจเลย เพลงแบบนั้นเหมือนช่วยจัดห้องในหัวใหม่อีกรอบ ถ้าอย่างนั้นเวลาเหนื่อยที่สุด นายเปิดฟังเพื่อพัก หรือเปิดเพื่อฮึบกลับไปลุยต่อ?
+            <small>19:12</small>
+          </div>
+
+          <div class="delay-state">
+            <strong>Aira will reply after a short pause</strong>
+            <p>แสดงเพียงว่ากำลังรอข้อความ</p>
+          </div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-scribble">พิมพ์ข้อความของคุณ...</div>
+          <span class="sketch-button primary">Send</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="policy-grid section">
+      <article class="state-sheet">
+        <div class="state-header">
+          <div>
+            <p class="wire-label">State A</p>
+            <h3>18+ Self-Attestation</h3>
+          </div>
+          <span class="pill">dialog sketch</span>
+        </div>
+        <div class="modal-stack">
+          <div class="sheet">
+            <p class="wire-label">Prompt copy</p>
+            <p style="margin-top: 8px;">ยืนยันอายุ 18+ ก่อนเข้าสู่เนื้อหาที่ต้อง gate</p>
+            <div class="action-row" style="margin-top: 12px;">
+              <span class="sketch-button primary">I am 18+</span>
+              <span class="sketch-button">Stay in non-adult mode</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="state-sheet">
+        <div class="state-header">
+          <div>
+            <p class="wire-label">State B</p>
+            <h3>Guest Limit Reached</h3>
+          </div>
+          <span class="pill">10 of 10 used</span>
+        </div>
+        <div class="modal-stack">
+          <div class="sheet">
+            <p class="wire-label">Interruption copy</p>
+            <p style="margin-top: 8px;">คุณใช้ครบ 10 ข้อความแล้ว ใช้ Facebook login เพื่อกลับมาคุยต่อกับคนเดิม</p>
+            <div class="action-row" style="margin-top: 12px;">
+              <span class="sketch-button primary">Continue with Facebook</span>
+              <span class="sketch-button">Start over as guest</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="state-sheet">
+        <div class="state-header">
+          <div>
+            <p class="wire-label">State C</p>
+            <h3>Login Value</h3>
+          </div>
+          <span class="pill">benefits sketch</span>
+        </div>
+        <div class="modal-stack">
+          <div class="sheet">
+            <p class="wire-label">What login gives</p>
+            <ul class="checklist" style="margin-top: 8px;">
+              <li>come back to the same character later</li>
+              <li>restore continuity for that conversation</li>
+              <li>do not move guest data into the account</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="footer-note">This screen closes the MVP big-picture flow.</div>
+  </div>
+</body>
+</html>

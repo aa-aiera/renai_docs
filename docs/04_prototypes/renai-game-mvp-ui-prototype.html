@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renai Game MVP UI Prototype</title>
+  <link rel="stylesheet" href="./renai-game-mvp-ui-prototype.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Renai Game MVP Prototype</p>
+        <h1>คุยแบบเปิดใจ ไม่ต้องเลือกเส้นเรื่อง</h1>
+        <p class="lead">ภาพรวมของ guest-first flow: เลือกตัวละคร, เข้าแชต, แล้วค่อย login เมื่ออยากกลับมาคุยต่อ</p>
+        <div class="hero-actions">
+          <a href="./renai-game-mvp-prototype-index.html" class="button button-secondary">เปิดหน้า walkthrough</a>
+          <a href="#discovery" class="button button-primary">ดูหน้าเลือกตัวละคร</a>
+          <a href="#chat" class="button button-secondary">ดูหน้าแชต</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="journey-strip">
+        <article class="journey-card">
+          <span class="journey-step">01</span>
+          <h2>ลองคุยได้ทันที</h2>
+          <p>เข้าได้เลยแบบ guest</p>
+        </article>
+        <article class="journey-card">
+          <span class="journey-step">02</span>
+          <h2>เลือกตัวละครตามอุปกรณ์</h2>
+          <p>desktop compare, mobile one-card focus</p>
+        </article>
+        <article class="journey-card">
+          <span class="journey-step">03</span>
+          <h2>แชตต่อเนื่องเมื่อพร้อม</h2>
+          <p>login เมื่ออยากกลับมาคุยต่อ</p>
+        </article>
+      </section>
+
+      <section id="discovery" class="prototype-section">
+        <div class="section-heading">
+          <p class="section-kicker">Screen Group A</p>
+          <h2>Character Discovery</h2>
+          <p>desktop และ mobile ใช้คนละจังหวะ แต่พาไปจุดเดียวกันคือเริ่มแชตเร็ว</p>
+        </div>
+
+        <div class="desktop-stage paper-card">
+          <div class="desktop-list rail-card">
+            <div class="rail-head">
+              <p class="panel-label">Desktop List View</p>
+              <span class="small-pill">Thai-first</span>
+            </div>
+
+            <article class="character-row selected">
+              <div class="avatar avatar-aira">A</div>
+              <div>
+                <h3>Aira</h3>
+                <p>อบอุ่น, ขี้เล่น, ช่างสังเกต</p>
+              </div>
+              <span class="status-dot"></span>
+            </article>
+
+            <article class="character-row">
+              <div class="avatar avatar-lyra">L</div>
+              <div>
+                <h3>Lyra</h3>
+                <p>ใจเย็น, รับฟังเก่ง, ค่อยเป็นค่อยไป</p>
+              </div>
+            </article>
+
+            <article class="character-row">
+              <div class="avatar avatar-nova">N</div>
+              <div>
+                <h3>Nova</h3>
+                <p>มั่นใจ, ฉลาดเล่นคำ, พลังสูง</p>
+              </div>
+            </article>
+
+            <div class="trial-banner">
+              <strong>ทดลองฟรี</strong>
+              <span>ยังไม่ต้องล็อกอิน เริ่มคุยได้ 10 ข้อความ</span>
+            </div>
+          </div>
+
+          <div class="feature-panel">
+            <div class="feature-hero aira-gradient">
+              <p class="panel-label">Selected Character</p>
+              <h3>Aira</h3>
+              <p class="feature-meta">22 ปี • warm • cafe vibe</p>
+              <p class="feature-summary">โทนคุยสบาย ๆ และเริ่มบทสนทนาได้ง่าย</p>
+            </div>
+
+            <div class="info-grid">
+              <article class="info-card">
+                <p class="info-title">Persona</p>
+                <p>อบอุ่น ขี้เล่น ชวนคุยง่าย</p>
+              </article>
+              <article class="info-card">
+                <p class="info-title">Guest Trial</p>
+                <p>เริ่มคุยได้ทันที 10 ข้อความ</p>
+              </article>
+              <article class="info-card wide">
+                <p class="info-title">Primary Action</p>
+                <div class="cta-row">
+                  <a href="#chat" class="button button-primary">เริ่มคุยกับ Aira</a>
+                  <a href="#states" class="button button-secondary">ดู conversion state</a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="mobile-stage paper-card">
+          <div class="section-subhead">
+            <p class="panel-label">Mobile Swipe View</p>
+            <p>ใช้ card stack ที่ดูเหมือนแอปหาคู่ แต่มีพื้นที่พอให้ persona และ boundary ชัดตั้งแต่ก่อนเข้าห้องแชต</p>
+          </div>
+
+          <div class="phone-frame">
+            <div class="phone-topbar">
+              <span>09:41</span>
+              <span>Renai</span>
+              <span>100%</span>
+            </div>
+
+            <div class="swipe-deck">
+              <article class="swipe-card swipe-top">
+                <div class="swipe-photo aira-gradient"></div>
+                <div class="swipe-body">
+                  <div class="swipe-head">
+                    <h3>Aira, 22</h3>
+                    <span class="small-pill accent-pill">พร้อมเริ่มคุย</span>
+                  </div>
+                      <p>อบอุ่น ขี้เล่น และเริ่มคุยได้ง่าย</p>
+                  <div class="tag-row">
+                        <span>Late-night cafe</span>
+                        <span>Playful</span>
+                  </div>
+                </div>
+              </article>
+
+              <article class="swipe-card swipe-back one">
+                <div class="swipe-photo lyra-gradient"></div>
+              </article>
+
+              <article class="swipe-card swipe-back two">
+                <div class="swipe-photo nova-gradient"></div>
+              </article>
+            </div>
+
+            <div class="swipe-actions">
+              <button class="circle-button muted">ข้าม</button>
+              <button class="circle-button primary">เริ่มคุย</button>
+              <button class="circle-button muted">บันทึกไว้ก่อน</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="chat" class="prototype-section">
+        <div class="section-heading">
+          <p class="section-kicker">Screen Group B</p>
+          <h2>Chat + Conversion</h2>
+          <p>ดูแชตหลักและจุดเปลี่ยนจาก guest ไปสู่ login ในพื้นที่เดียวกัน</p>
+        </div>
+
+        <div class="chat-stage paper-card">
+          <aside class="chat-rail rail-card">
+            <div class="rail-head">
+              <p class="panel-label">Conversation Rail</p>
+              <span class="small-pill">Desktop</span>
+            </div>
+
+            <article class="thread-item selected">
+              <div class="avatar avatar-aira">A</div>
+              <div>
+                <h3>Aira</h3>
+                <p>“อ่านอยู่ เดี๋ยวตอบนะ”</p>
+              </div>
+            </article>
+
+            <article class="thread-item">
+              <div class="avatar avatar-lyra">L</div>
+              <div>
+                <h3>Lyra</h3>
+                <p>ยังไม่เริ่มบทสนทนา</p>
+              </div>
+            </article>
+
+            <article class="thread-item">
+              <div class="avatar avatar-nova">N</div>
+              <div>
+                <h3>Nova</h3>
+                <p>พร้อมเริ่มคุย</p>
+              </div>
+            </article>
+          </aside>
+
+          <article class="chat-window">
+            <div class="chat-head">
+              <div>
+                <p class="panel-label">Active Chat</p>
+                <h3>Aira</h3>
+                <p class="chat-meta">โหมดทดลองใช้งาน • guest เหลือ 7/10 ข้อความ</p>
+              </div>
+              <div class="chat-meta-stack">
+                <span class="small-pill">Thai-first</span>
+                <span class="small-pill">simple delay</span>
+              </div>
+            </div>
+
+            <div class="message-stack">
+              <div class="message message-character">
+                <p>วันนี้ร้านค่อนข้างยุ่ง แต่ก็มีเพลงดี ๆ เปิดทั้งวันเลย นายเป็นสายฟังเพลงตอนทำงานไหม?</p>
+                <span>19:02</span>
+              </div>
+
+              <div class="message message-user">
+                <p>ฟังสิ โดยเฉพาะตอนต้องคิดงานยาก ๆ</p>
+                <span>19:03</span>
+              </div>
+
+              <div class="message message-character">
+                <p>งั้นเราเข้ากันได้เรื่องหนึ่งแล้ว ถ้าต้องเลือกเพลงเดียวไว้ดันอารมณ์ตอนตัน ๆ นายจะเลือกเพลงแบบไหน?</p>
+                <span>19:03</span>
+              </div>
+
+              <div class="delay-note">
+                <strong>กำลังรอข้อความถัดไปจาก Aira</strong>
+                <p>แสดงเพียงว่ากำลังรอข้อความ</p>
+              </div>
+            </div>
+
+            <div class="input-shell">
+              <div class="input-mock">พิมพ์ข้อความของคุณ...</div>
+              <button class="button button-primary">ส่ง</button>
+            </div>
+          </article>
+        </div>
+
+        <div class="state-grid">
+          <article class="state-card paper-card">
+            <p class="panel-label">State 1</p>
+            <h3>18+ Confirmation</h3>
+            <div class="modal-sheet warm-sheet">
+              <p class="sheet-title">ยืนยันอายุ 18 ปีขึ้นไป</p>
+              <p>บางบทสนทนาอาจมีเนื้อหาเชิงโรแมนติกสำหรับผู้ใหญ่ โปรดยืนยันอายุของคุณก่อนดำเนินการต่อ</p>
+              <div class="cta-row">
+                <a class="button button-primary">ฉันอายุ 18+</a>
+                <a class="button button-secondary">กลับไปหน้าก่อนหน้า</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="state-card paper-card">
+            <p class="panel-label">State 2</p>
+            <h3>Guest Limit Reached</h3>
+            <div class="modal-sheet rose-sheet">
+              <p class="sheet-title">ครบ 10 ข้อความแล้ว</p>
+              <p>ถ้าต้องการคุยต่อและให้ตัวละครจำคุณได้ในครั้งถัดไป กรุณาเข้าสู่ระบบด้วย Facebook</p>
+              <div class="cta-row stacked">
+                <a class="button button-primary">เข้าสู่ระบบด้วย Facebook</a>
+                <a class="text-link">เริ่มใหม่แบบ guest ไม่เก็บความต่อเนื่อง</a>
+              </div>
+            </div>
+          </article>
+
+          <article class="state-card paper-card">
+            <p class="panel-label">State 3</p>
+            <h3>Login Benefit Callout</h3>
+            <div class="benefit-card">
+              <p class="sheet-title">ทำไมต้องล็อกอิน</p>
+              <ul class="bullet-list">
+                <li>กลับมาคุยกับคนเดิมได้</li>
+                <li>เก็บความต่อเนื่องของแชต</li>
+                <li>ไม่ต้องเริ่มใหม่ทุกครั้ง</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="prototype-footer">
+      <p>Static prototype focused on the main flow only.</p>
+    </footer>
+  </div>
+</body>
+</html>

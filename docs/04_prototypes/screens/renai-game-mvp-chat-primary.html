@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renai MVP Chat And Conversion Prototype</title>
+  <link rel="stylesheet" href="../renai-game-mvp-ui-prototype.css">
+</head>
+<body>
+  <div class="screen-shell">
+    <div class="screen-nav">
+      <div>
+        <p class="panel-label">Screen 03</p>
+        <h1>Chat + Conversion</h1>
+        <p class="screen-crumb">chat surface plus the key login and age-gate moments</p>
+      </div>
+      <div class="screen-links">
+        <a href="../renai-game-mvp-prototype-index.html">กลับไป index</a>
+        <a href="./renai-game-mvp-landing.html">กลับไปต้น flow</a>
+      </div>
+    </div>
+
+    <div class="section-heading screen-section">
+      <p class="section-kicker">Chat And Gate</p>
+      <h2>ดูแชตหลักและจุดเปลี่ยนจาก guest ไปสู่ login ในหน้าเดียว</h2>
+      <p>ผู้เล่นเห็นแค่สิ่งที่ช่วยให้คุยต่อได้ และเห็น key states ตอนที่จำเป็น</p>
+    </div>
+
+    <section class="chat-stage paper-card screen-section">
+      <aside class="chat-rail rail-card">
+        <div class="rail-head">
+          <p class="panel-label">Active Threads</p>
+          <span class="small-pill">Desktop pattern</span>
+        </div>
+        <article class="thread-item selected">
+          <div class="avatar avatar-aira">A</div>
+          <div>
+            <h3>Aira</h3>
+            <p>รอตอบกลับอยู่</p>
+          </div>
+        </article>
+        <article class="thread-item">
+          <div class="avatar avatar-lyra">L</div>
+          <div>
+            <h3>Lyra</h3>
+            <p>ยังไม่เริ่มบทสนทนา</p>
+          </div>
+        </article>
+        <article class="thread-item">
+          <div class="avatar avatar-nova">N</div>
+          <div>
+            <h3>Nova</h3>
+            <p>เปิดคุยได้ทันที</p>
+          </div>
+        </article>
+      </aside>
+
+      <article class="chat-window">
+        <div class="chat-head">
+          <div>
+            <p class="panel-label">Guest Session</p>
+            <h3>Aira</h3>
+            <p class="chat-meta">guest เหลือ 7/10 ข้อความ • ไม่มีการโชว์ความสัมพันธ์ภายใน</p>
+          </div>
+          <div class="chat-meta-stack">
+            <span class="small-pill">Thai-first</span>
+            <span class="small-pill">simple delay</span>
+          </div>
+        </div>
+
+        <div class="chat-safety-bar">
+          <strong>visible guidance</strong>
+          <span>คุยต่อได้อย่างเรียบง่ายและปลอดภัย</span>
+        </div>
+
+        <div class="message-stack">
+          <div class="message message-character">
+            <p>วันนี้ร้านเงียบกว่าปกติหน่อย ดีเหมือนกันนะ เพราะได้ฟังเพลงเต็ม ๆ เลย นายมีเพลงที่เปิดแล้วช่วยให้สมองโล่งไหม?</p>
+            <span>19:11</span>
+          </div>
+          <div class="message message-user">
+            <p>มีสิ ช่วงทำงานชอบฟังเพลง lo-fi มากกว่าเพลงที่มีเนื้อร้อง</p>
+            <span>19:12</span>
+          </div>
+          <div class="message message-character">
+            <p>อืม เข้าใจเลย มันเหมือนมีพื้นที่ให้คิดของเราเอง ถ้าจะจัดเพลย์ลิสต์ตอนดึก นายจะใส่เพลงแบบไหนเป็นเพลงแรก?</p>
+            <span>19:12</span>
+          </div>
+          <div class="delay-note">
+            <strong>Aira กำลังจะตอบกลับ</strong>
+            <p>แสดงเพียงสถานะรอข้อความ</p>
+          </div>
+        </div>
+
+        <div class="input-shell">
+          <div class="input-mock">พิมพ์ข้อความของคุณ...</div>
+          <button class="button button-primary">ส่ง</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="state-grid screen-section">
+      <article class="state-card paper-card">
+        <p class="panel-label">State 1</p>
+        <h3>18+ Confirmation</h3>
+        <div class="modal-sheet warm-sheet">
+          <p class="sheet-title">ยืนยันอายุ 18 ปีขึ้นไป</p>
+          <p>ยืนยันอายุก่อนเข้าสู่เนื้อหาที่ต้อง gate</p>
+          <div class="cta-row stacked">
+            <a class="button button-primary">ฉันอายุ 18+</a>
+            <a class="button button-secondary">ยังไม่ยืนยันตอนนี้</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="state-card paper-card">
+        <p class="panel-label">State 2</p>
+        <h3>Guest Limit Reached</h3>
+        <div class="modal-sheet rose-sheet">
+          <p class="sheet-title">ครบ 10 ข้อความแล้ว</p>
+          <p>login เพื่อกลับมาคุยต่อกับคนเดิม</p>
+          <div class="cta-row stacked">
+            <a class="button button-primary">เข้าสู่ระบบด้วย Facebook</a>
+            <a class="text-link">เริ่มใหม่แบบ guest</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="state-card paper-card">
+        <p class="panel-label">State 3</p>
+        <h3>Login Benefit</h3>
+        <div class="benefit-card">
+          <p class="sheet-title">ทำไมต้องล็อกอิน</p>
+          <ul class="bullet-list">
+            <li>กลับมาคุยกับคนเดิมได้</li>
+            <li>เก็บความต่อเนื่องของแชต</li>
+            <li>ไม่ต้องเริ่มใหม่ทุกครั้ง</li>
+          </ul>
+        </div>
+      </article>
+    </section>
+
+    <footer class="prototype-footer">
+      <p>This screen closes the MVP big-picture flow.</p>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renai MVP Discovery Prototype</title>
+  <link rel="stylesheet" href="../renai-game-mvp-ui-prototype.css">
+</head>
+<body>
+  <div class="screen-shell">
+    <div class="screen-nav">
+      <div>
+        <p class="panel-label">Screen 02</p>
+        <h1>Discovery</h1>
+        <p class="screen-crumb">desktop compare plus mobile one-card overview</p>
+      </div>
+      <div class="screen-links">
+        <a href="../renai-game-mvp-prototype-index.html">กลับไป index</a>
+        <a href="./renai-game-mvp-chat-primary.html">ถัดไป: Chat + Conversion</a>
+      </div>
+    </div>
+
+    <div class="section-heading screen-section">
+      <p class="section-kicker">Discovery Overview</p>
+      <h2>หน้าเดียวเห็นทั้ง compare บน desktop และ one-card flow บน mobile</h2>
+      <p>สอง pattern นี้พาไปสู่การเริ่มแชตจุดเดียวกัน</p>
+    </div>
+
+    <section class="desktop-stage paper-card screen-section">
+      <div class="rail-card">
+        <div class="rail-head">
+          <p class="panel-label">Character List</p>
+          <span class="small-pill">3 launch characters</span>
+        </div>
+
+        <article class="character-row selected">
+          <div class="avatar avatar-aira">A</div>
+          <div>
+            <h3>Aira</h3>
+            <p>friendly start, playful tone</p>
+          </div>
+          <span class="status-dot"></span>
+        </article>
+
+        <article class="character-row">
+          <div class="avatar avatar-lyra">L</div>
+          <div>
+            <h3>Lyra</h3>
+            <p>slow burn, gentle route</p>
+          </div>
+        </article>
+
+        <article class="character-row">
+          <div class="avatar avatar-nova">N</div>
+          <div>
+            <h3>Nova</h3>
+            <p>high energy, confident banter</p>
+          </div>
+        </article>
+
+        <div class="trial-banner">
+          <strong>guest mode</strong>
+          <span>เลือกตัวละครแล้วเริ่มคุยได้ทันทีโดยไม่ต้องผ่าน login wall</span>
+        </div>
+      </div>
+
+      <div class="feature-panel">
+        <div class="feature-hero aira-gradient">
+          <p class="panel-label">Selected Preview</p>
+          <h3>Aira</h3>
+          <p class="feature-meta">Warm • Playful • Cafe vibe</p>
+          <p class="feature-summary">เริ่มคุยง่ายและให้ mood ชัด</p>
+        </div>
+
+        <div class="info-grid">
+          <article class="info-card">
+            <p class="info-title">Persona</p>
+            <p>warm opener</p>
+          </article>
+          <article class="info-card">
+            <p class="info-title">Trial</p>
+            <p>guest start ได้ทันที</p>
+          </article>
+          <article class="info-card wide">
+            <p class="info-title">Primary Action</p>
+            <div class="cta-row">
+              <a class="button button-primary" href="./renai-game-mvp-chat-primary.html">เข้าแชตกับ Aira</a>
+              <a class="button button-secondary" href="./renai-game-mvp-chat-primary.html">ดู key states</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="mobile-stage paper-card screen-section">
+      <div class="section-subhead">
+        <p class="panel-label">Mobile One-Card</p>
+        <p>มือถือใช้การ์ดเดียวเพื่อพาเข้าแชตเร็ว</p>
+      </div>
+
+      <div class="phone-frame">
+        <div class="phone-topbar">
+          <span>09:41</span>
+          <span>Renai</span>
+          <span>100%</span>
+        </div>
+
+        <div class="swipe-deck">
+          <article class="swipe-card swipe-top">
+            <div class="swipe-photo nova-gradient"></div>
+            <div class="swipe-body">
+              <div class="swipe-head">
+                <h3>Nova, 29</h3>
+                <span class="small-pill accent-pill">fast start</span>
+              </div>
+              <p>มั่นใจ ชวนคุยไว และตัดสินใจได้เร็วจากการ์ดเดียว</p>
+              <div class="tag-row">
+                <span>Urban</span>
+                <span>Banter</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="swipe-card swipe-back one">
+            <div class="swipe-photo aira-gradient"></div>
+          </article>
+
+          <article class="swipe-card swipe-back two">
+            <div class="swipe-photo lyra-gradient"></div>
+          </article>
+        </div>
+
+        <div class="swipe-actions">
+          <button class="circle-button muted">ข้าม</button>
+          <button class="circle-button primary">เริ่มคุย</button>
+          <button class="circle-button muted">บันทึกไว้</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="prototype-footer">
+      <p>Next: chat and conversion together.</p>
+    </footer>
+  </div>
+</body>
+</html>

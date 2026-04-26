@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renai MVP Minimal Landing Wireframe</title>
+  <style>
+    :root {
+      --bg: #f3f3f1;
+      --panel: #ffffff;
+      --line: #2d2d2d;
+      --line-soft: #8f8f8f;
+      --text: #1a1a1a;
+      --muted: #565656;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.08);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(224, 224, 224, 0.4)),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 23px,
+          rgba(0, 0, 0, 0.035) 23px,
+          rgba(0, 0, 0, 0.035) 24px
+        ),
+        var(--bg);
+      color: var(--text);
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    }
+
+    main {
+      width: min(100%, 760px);
+      padding: clamp(28px, 5vw, 56px);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    main::before,
+    main::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px dashed rgba(45, 45, 45, 0.28);
+      border-radius: calc(var(--radius) - 10px);
+      pointer-events: none;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      max-width: 11ch;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .supporting-line {
+      max-width: 38ch;
+      color: var(--muted);
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      line-height: 1.5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 22px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.98rem;
+      letter-spacing: 0.02em;
+      background: #ededed;
+    }
+
+    .button-secondary {
+      background: transparent;
+      border-color: var(--line-soft);
+      color: var(--muted);
+    }
+
+    .disclosure {
+      display: inline-block;
+      max-width: 46ch;
+      padding-top: 8px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: var(--muted);
+      border-top: 1px solid rgba(45, 45, 45, 0.2);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      main {
+        padding: 24px;
+        border-radius: 24px;
+      }
+
+      main::before,
+      main::after {
+        inset: 10px;
+      }
+
+      .actions {
+        display: grid;
+      }
+
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="stack" aria-label="Minimal landing wireframe">
+      <h1>เริ่มคุยกับตัวละครที่ใช่ ก่อนค่อยล็อกอิน</h1>
+      <p class="supporting-line">ลองแชตแบบ guest ได้ทันทีในประสบการณ์เดทแชตภาษาไทย แล้วค่อยใช้ Facebook เมื่อต้องการกลับมาคุยต่อเนื่อง</p>
+      <div class="actions">
+        <a class="button" href="#">ลองแชตแบบ Guest</a>
+        <a class="button button-secondary" href="#">เข้าสู่ระบบด้วย Facebook</a>
+      </div>
+      <p class="disclosure">ทดลองแบบ guest ส่งได้ 10 ข้อความ และข้อมูลช่วงทดลองจะไม่ย้ายไปยังบัญชีหลังล็อกอิน</p>
+    </section>
+  </main>
+</body>
+</html>
