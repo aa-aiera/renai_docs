@@ -2,358 +2,142 @@
 
 ## Document Control
 - Status: Draft Architecture Companion
-- Version: v1.0
+- Version: v1.1.0
 - Last Updated: 2026-04-26
 - Owner: SA
 
 ## Change Log
 | Date | Version | Change Type | Summary | Downstream Impact |
 | --- | --- | --- | --- | --- |
-| 2026-04-26 | v1.0 | Major | Established the privacy, retention, and lifecycle companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should preserve these lifecycle boundaries as part of Architecture v1.0. |
+| 2026-04-26 | v1.1.0 | Major | Reconciled lifecycle design to PRD v3.0.2 by removing guest lifecycle assumptions and defining explicit phase 1 retention windows plus admin-managed deletion behavior. | Persistence design, API planning, worker purge logic, and audit storage must align to the fixed retention windows and internal delete workflow. |
+| 2026-04-26 | v1.0.0 | Major | Established the privacy, retention, and lifecycle companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should preserve these lifecycle boundaries as part of Architecture v1.0.0. |
 
 ## Upstream Baseline
-- Based On: Phase 1 MVP PRD v1.0 and MVP architecture packet v1.0
+- Based On: Phase 1 MVP PRD v3.0.2 and MVP architecture packet v1.1.0
 
 ## Executive Summary
-This document defines the phase 1 privacy, retention, and deletion architecture for the renai-game-style LLM product. The existing architecture packet already defines identity, conversation, memory, scheduling, and provider boundaries, but it leaves lifecycle rules under-specified. This companion closes that gap by defining how data should be classified, retained, expired, soft-deleted, hard-deleted, and kept auditable.
-
-Because the source notes do not define final legal or business retention windows, this document does not invent exact retention durations beyond what the MVP already implies, such as guest-session expiry behavior. Instead, it defines lifecycle classes, ownership rules, deletion states, and implementation boundaries that allow final policy values to be filled in later without redesign.
+This document defines the phase 1 privacy, retention, and deletion architecture for the renai-game-style LLM product. The current PRD baseline now fixes the lifecycle values that were previously open: conversation data is retained for 12 months after last activity, derived memory and relationship state are hard-deleted within 30 days after confirmed deletion, audit-minimum traces are retained for 90 days, and phase 1 deletion is internal or admin-managed rather than Player self-service.
 
 ## Source Notes
 - `docs/01_requirements/renai-game-llm-prd.md`
 - `docs/02_architecture/renai-game-llm-mvp-hld.md`
-- `docs/02_architecture/renai-game-llm-mvp-erd.md`
-- `docs/02_architecture/renai-game-llm-mvp-sequence-flows.md`
-- `docs/02_architecture/renai-game-llm-mvp-component-diagrams.md`
-- `docs/02_architecture/adr-0001-phase1-hosted-model-adult-content-fallback.md`
+- `docs/02_architecture/renai-game-llm-mvp-security-architecture.md`
 
-## Problem Statement
-The MVP stores sensitive conversational data, age-confirmation state, relationship metrics, memory summaries, and authentication-linked identity. The current packet describes where that data lives, but not enough about how long it should live, what happens at guest login reset, how delete intent should propagate across derived data, or which records may need limited audit retention.
+## Lifecycle Goals
+- Preserve Player-MC conversation continuity without indefinite retention.
+- Ensure derived memory and relationship state never outlive the owning conversation after deletion.
+- Keep audit traces minimal and separate from Player-visible transcript storage.
+- Support admin-managed deletion without exposing a Player-facing delete control in phase 1.
 
-Without explicit lifecycle architecture, the implementation risks:
-- keeping data longer than necessary
-- deleting user-visible data while leaving derived memory behind
-- weakening guest-reset guarantees
-- making future privacy policy or deletion features expensive to add
+## Data Classes And Retention Windows
+| Data Class | Included Data | Retention Window | Delete Behavior |
+| --- | --- | --- | --- |
+| Conversation history | conversation records, message transcript, restore metadata | 12 months after last conversation activity unless earlier deletion is triggered | inaccessible immediately after delete intent; hard-deleted by purge workflow |
+| Derived memory and relationship state | short-term context, long-term memory, relationship state, reply schedules | owner-bound during normal use; hard-delete within 30 days after confirmed deletion | cascades from owning conversation |
+| Audit-minimum traces | metadata-first safety, operational, and abuse-review events | 90 days | retained separately from transcript store; purged on audit schedule |
 
-## Scope
-This document covers:
-- data classification for phase 1 entities
-- guest and authenticated lifecycle boundaries
-- retention classes instead of final legal durations
-- deletion-state architecture
-- derived-data cleanup rules
-- auditability boundaries
-
-This document does not cover:
-- jurisdiction-specific legal advice
-- final product copy for privacy notices
-- encryption or secrets-management implementation details
-- multi-region data residency strategy
-
-## Architecture Goals
-- preserve the approved guest-reset rule
-- make deletion propagate consistently across raw and derived data
-- minimize retained personal and behavioral data where possible
-- keep the schema and modules ready for future policy hardening
-- avoid breaking observability and abuse-tracing requirements
-
-## Data Classification Model
-### Class A: Identity And Access Data
-Includes:
-- `UserAccount`
-- `IdentityLink`
-- guest-session identity markers
-- session and age-confirmation state
-
-Sensitivity:
-High
-
-Lifecycle intent:
-- durable for authenticated accounts while the account remains active
-- short-lived for guest usage
-- deletion must remove or irreversibly disassociate downstream personal ownership where product policy allows
-
-### Class B: Conversation Content Data
-Includes:
-- `Conversation`
+## Ownership Model
+### Primary Ownership Root
+`Conversation` is the lifecycle root for:
 - `Message`
 - `ShortTermContext`
-
-Sensitivity:
-High
-
-Lifecycle intent:
-- durable for authenticated continuity in phase 1
-- guest-scoped content expires with guest lifecycle and does not transfer on login
-- delete requests must remove both raw content and prompt-ready condensed forms
-
-### Class C: Derived Relationship And Memory Data
-Includes:
 - `LongTermMemory`
 - `RelationshipState`
-- prompt-ready summaries or salience records
-
-Sensitivity:
-High
-
-Lifecycle intent:
-- derived data must never outlive its owning conversation in normal operation
-- deletion of a conversation or account must cascade into derived memory and relationship state
-
-### Class D: Scheduling And Operational Data
-Includes:
 - `ReplySchedule`
-- rate-limit counters
-- transient queue payloads
 
-Sensitivity:
-Medium
+### Separate Retention Domain
+`AuditTrace` is not a child retention root for Player-visible chat. It has its own 90-day retention policy and stricter access expectations.
 
-Lifecycle intent:
-- retained only while operationally necessary
-- expired or completed records should age out faster than user-visible conversation history unless audit value requires otherwise
+## Lifecycle States
+### Conversation States
+- `active`: normal read and write access
+- `soft-deleted`: Player-facing access blocked and new writes denied
+- `purge-pending`: queued for irreversible cleanup
+- `purged`: removed from the product data path
 
-### Class E: Audit And Safety Trace Data
-Includes:
-- `AuditEvent`
-- policy refusal events
-- provider error traces with minimized conversational payload inclusion
+### State Semantics
+- `soft-deleted` exists to stop access immediately while allowing asynchronous purge work
+- `purge-pending` exists to coordinate worker-safe cleanup across owner-bound records
+- delayed reply jobs must treat both `soft-deleted` and `purge-pending` as non-runnable states
 
-Sensitivity:
-Medium to High depending on payload
+## Deletion Policy
+### Phase 1 Delete Exposure
+Phase 1 does not expose a Player-facing self-service delete feature.
 
-Lifecycle intent:
-- should retain enough traceability for safety review and debugging
-- should avoid storing more raw user text than necessary
-- should remain separable from main user-facing chat history for controlled retention and access rules
+Deletion is initiated through an internal or admin-managed workflow that:
+1. records delete intent
+2. marks the conversation or account inaccessible
+3. schedules purge work
+4. completes hard deletion inside the approved purge window
 
-## Lifecycle Architecture
-### 1. Guest Session Lifecycle
-Guest usage is intentionally disposable.
+### Conversation Delete Workflow
+1. Internal/admin request marks the conversation `soft-deleted`.
+2. API read and write paths stop returning it in normal Player flows.
+3. Worker jobs stop executing delayed replies for that scope.
+4. Purge orchestration marks the conversation `purge-pending`.
+5. Owner-bound transcript and derived artifacts are hard-deleted within 30 days.
 
-Rules:
-- guest sessions are created at first app bootstrap
-- guest conversations and messages are owned by `GuestSession`, not `UserAccount`
-- guest memory and relationship state are allowed only within that guest-owned conversation scope
-- on login, guest state is not migrated
-- guest session data should move to an expired state and then be eligible for cleanup
+### Account Delete Workflow
+1. Internal/admin account delete intent targets the Player account.
+2. All owned conversations are marked for delete processing.
+3. Owner-bound transcript and derived artifacts follow the same purge rule.
+4. Audit traces remain on their separate 90-day retention rule unless a stricter legal or operational rule applies.
 
-Architectural implication:
-Guest-reset behavior must be enforced in both API logic and persistence ownership. No derived memory artifact should survive as authenticated continuity after login.
+## Retention Enforcement Rules
+### Conversation History
+- Calculate retention from `last_activity_at`.
+- Do not keep transcript data indefinitely for dormant conversations.
+- If a conversation is deleted earlier, deletion overrides the 12-month durability window.
 
-### 2. Authenticated Account Lifecycle
-Authenticated conversations are durable by default in phase 1.
+### Derived Memory And Relationship State
+- Never treat derived memory as an independent retention root.
+- Purge within 30 days after the owning conversation or account is confirmed for deletion.
+- Ensure background jobs cannot recreate purged state after deletion.
 
-Rules:
-- authenticated users reopen the same user-character conversation root unless reset or archival behavior is added later
-- memory and relationship state remain attached to that durable conversation root
-- account deactivation or delete intent must propagate to owned conversation content and derived state
+### Audit-Minimum Traces
+- Store only the minimum metadata and evidence needed for abuse review, policy enforcement, and incident investigation.
+- Default to metadata-first payloads and reason codes rather than full transcript duplication.
+- Keep audit access paths separate from Player-facing product reads.
 
-### 3. Conversation Lifecycle States
-Recommendation:
-Support lifecycle states conceptually even if the phase 1 UI exposes only active conversations.
+## Operational Controls
+### API Layer
+- Reject reads and writes for `soft-deleted` and `purge-pending` conversations.
+- Do not expose internal delete mechanics as public Player API surface in phase 1.
 
-Recommended states:
-- `active`
-- `inactive`
-- `soft-deleted`
-- `purge-pending`
-- `purged`
+### Worker Layer
+- Recheck lifecycle state before delayed reply generation.
+- Cancel or skip jobs for non-active conversations.
+- Run purge jobs idempotently.
 
-Purpose:
-These states allow operational safety, delayed background cleanup, and deletion-request processing without immediate irreversible data loss on the synchronous user path.
+### Storage Layer
+- Preserve explicit lifecycle columns and purge timestamps.
+- Support cascading cleanup from conversation ownership.
+- Keep audit traces in separable storage or logical tables.
 
-### 4. Derived Data Lifecycle Rule
-`ShortTermContext`, `LongTermMemory`, and `RelationshipState` are derivative or conversation-bound records.
-
-Rule:
-They must follow the lifecycle of the owning `Conversation` and must never become independent retention roots.
-
-## Retention Class Model
-Because exact durations are not yet approved, the architecture should use retention classes rather than hardcoded day counts.
-
-### Retention Class R1: Ephemeral
-Examples:
-- transient queue payloads
-- cache entries
-- short-lived rate-limit counters
-
-Policy intent:
-delete automatically after operational usefulness ends
-
-### Retention Class R2: Guest-Limited
-Examples:
-- `GuestSession`
-- guest-owned conversations
-- guest-owned messages
-- guest-owned memory artifacts
-
-Policy intent:
-retain only for the guest session lifecycle and cleanup grace period, then purge
-
-### Retention Class R3: Account-Durable
-Examples:
-- authenticated conversations
-- authenticated message history
-- authenticated long-term memory
-- relationship state
-
-Policy intent:
-retain while the account and conversation remain active, subject to future user deletion or archival policy
-
-### Retention Class R4: Audit-Minimum
-Examples:
-- selected `AuditEvent` records
-- safety and moderation traces
-
-Policy intent:
-retain only the minimum needed for debugging, safety review, abuse investigation, and compliance support
-
-## Deletion Architecture
-### Deletion Principles
-- user-visible delete intent must propagate to raw and derived data
-- guest reset is not the same as authenticated delete; it is a lifecycle boundary
-- operational cleanup should be asynchronous once a delete or purge state is recorded
-- audit retention should be minimized and decoupled from the main chat history
-
-### Recommended Deletion States
-For account-owned and conversation-owned data, use these logical stages:
-1. `active`
-2. `soft-deleted`
-3. `purge-pending`
-4. `purged`
-
-### Soft Delete Purpose
-Soft delete exists to:
-- prevent immediate user-facing access
-- block new writes to the deleted ownership scope
-- allow background cascades to complete safely
-
-### Purge-Pending Purpose
-Purge-pending exists to:
-- queue cleanup jobs for messages, memory, relationship state, schedules, and derived summaries
-- cancel not-yet-executed delayed replies
-- avoid partial deletion in synchronous request handling
-
-### Hard Purge Purpose
-Hard purge exists to:
-- remove raw conversation text
-- remove derived memory and relationship data
-- remove active scheduling records
-- remove or anonymize operational traces according to audit-minimum policy
-
-## Entity-Level Lifecycle Guidance
-| Entity | Retention Class | Delete Behavior | Notes |
-| --- | --- | --- | --- |
-| `GuestSession` | R2 | expire then purge | guest session must never become authenticated continuity |
-| `Conversation` guest-owned | R2 | expire then purge | do not transfer on login |
-| `Conversation` authenticated | R3 | soft-delete then purge | future UI may expose delete or archive later |
-| `Message` guest-owned | R2 | cascade from guest conversation | raw guest text should not survive beyond guest retention |
-| `Message` authenticated | R3 | cascade from authenticated conversation | player-visible history root |
-| `ShortTermContext` | follows owner | cascade from conversation | condensed context must not outlive source conversation |
-| `LongTermMemory` | follows owner | cascade from conversation | derived summary must be deleted with source scope |
-| `RelationshipState` | follows owner | cascade from conversation | structured derived state cannot survive deleted conversation |
-| `ReplySchedule` | R1 or owner-bound | cancel and purge | do not execute for deleted or expired conversations |
-| `AuditEvent` | R4 | minimize and separate | prefer event metadata over raw transcript copies |
-| `IdentityLink` | R3 | delete with account or unlink policy | exact unlink workflow deferred |
-
-## Operational Flows
-### Flow 1: Guest Login Reset
-1. Guest logs in with Facebook.
-2. Authenticated `UserAccount` is resolved.
-3. Guest-owned conversations remain guest-owned and inaccessible to the new authenticated session.
-4. Guest ownership moves toward expiry and purge.
-5. No guest-derived `LongTermMemory` or `RelationshipState` is copied into the authenticated account.
-
-### Flow 2: Authenticated Conversation Delete Intent
-1. User or admin delete intent marks the conversation `soft-deleted`.
-2. Read APIs stop returning it.
-3. New writes and delayed replies are blocked.
-4. Background purge marks cleanup tasks for messages, short-term context, long-term memory, relationship state, and reply schedules.
-5. Audit traces are minimized or anonymized according to audit-minimum policy.
-
-### Flow 3: Account Delete Intent
-1. Account is marked deletion-requested or equivalent lifecycle state.
-2. All owned authenticated conversations move to `purge-pending` through a controlled cascade.
-3. Identity links are removed or disassociated.
-4. Remaining audit traces are minimized under separate retention rules.
-
-## Privacy By Design Requirements
-### Data Minimization
-- do not store provider-specific raw request and response envelopes unless clearly needed for debugging
-- keep `AuditEvent` payloads metadata-focused where possible
-- avoid duplicating full raw transcripts into multiple tables
-
-### Ownership Integrity
-- every memory and relationship artifact must point back to one owning conversation
-- no orphaned memory summaries may exist after conversation purge
-
-### Access Separation
-- guest-owned data and authenticated-owned data must remain distinct access domains
-- admin or moderation access, if added later, should use audit-specific access paths rather than direct product-user flows
-
-### Deletion Safety
-- scheduled reply jobs must verify ownership state before execution
-- purge workers must be idempotent so retries do not recreate or partially restore deleted state
-
-## Schema And Module Impact
-### Recommended Schema Extensions
-If not already present in implementation design, the architecture should support:
-- conversation lifecycle status values beyond only active state
-- optional deletion-request timestamps for account and conversation roots
-- purge execution timestamps where lifecycle traceability matters
-- audit payload design that separates metadata from raw text content
-
-### Module Ownership Impact
-- `Identity Module` owns guest expiry and authenticated account lifecycle entrypoints
-- `Guest Trial Gate` must respect expired guest state
-- `Conversations Module` owns lifecycle status enforcement on read and write paths
-- `Memory Module` and `Relationship Engine` must cascade cleanup from conversation state
-- `Async Worker` must cancel or skip scheduled replies for deleted scopes
-- `Audit Module` must enforce minimized trace payload design
-
-## Risks And Trade-Offs
+## Risks And Mitigations
 ### Risk 1: Over-Retention Of Derived Data
-If memory summaries and relationship state are treated as independent assets, deleted conversations may still persist behaviorally sensitive information.
+If memory summaries or relationship state survive after transcript deletion, behaviorally sensitive information remains.
 
 Mitigation:
-Make derived records owner-bound and cascade on deletion.
+Keep derived state owner-bound and purge it within 30 days of confirmed deletion.
 
-### Risk 2: Audit Payloads Become Shadow Chat History
-If audit events store too much raw conversation text, audit logs effectively become a second transcript store.
-
-Mitigation:
-Prefer metadata, reason codes, and narrow excerpts only where operationally required.
-
-### Risk 3: Guest Reset Becomes Inconsistent
-If guest reset is enforced only in UI or session logic, downstream data may survive incorrectly.
+### Risk 2: Audit Store Becomes A Shadow Transcript
+If audit traces store too much raw text, the system defeats its own retention minimization goals.
 
 Mitigation:
-Keep guest ownership separate at the schema level and purge from ownership roots.
+Keep audit traces metadata-first and independently retained.
 
-## Assumptions
-- Final legal and business retention day counts are not yet approved.
-- Phase 1 may not expose user-facing delete controls, but the architecture should still support deletion-state handling.
-- Audit trace retention may need narrower access and separate review paths later.
+### Risk 3: Async Jobs Reanimate Deleted State
+Delayed workers may create new messages or derived memory after delete intent.
 
-## Implementation Roadmap Impact
-### Immediate Phase 1 Requirements
-- implement guest expiry and purge behavior
-- make conversation lifecycle status explicit in the persistence model
-- ensure delayed reply execution checks conversation lifecycle state before delivery
-- ensure memory and relationship cleanup cascade from conversation ownership
+Mitigation:
+Require lifecycle rechecks before any async execution and make purge jobs idempotent.
 
-### Near-Term Follow-Up
-- define concrete retention windows per retention class
-- define user-facing delete and export behavior if added post-MVP
-- define admin and moderation access model for audit traces
-
-## Open Questions
-1. What concrete retention durations should be assigned to R2 guest-limited, R3 account-durable, and R4 audit-minimum classes?
-2. Should phase 1 expose any user-facing delete capability, or should delete only exist as an internal/admin lifecycle path until later?
-3. Should audit traces store narrow text excerpts at all, or should phase 1 restrict them to metadata and reason codes only?
+## Non-Blocking Future Considerations
+- A later phase may add Player-facing delete or export controls.
+- A later phase may refine audit payload rules if moderation needs expand.
+- A later phase may revise retention windows if legal or business requirements change.
 
 ## Recommendation Summary
 Recommendation:
-Adopt a lifecycle architecture where guest data is intentionally disposable, authenticated conversation continuity is durable but owner-bound, and all derived memory and relationship data cascades from the owning conversation. Use retention classes instead of hardcoded durations until policy values are approved, and prevent audit logs from becoming a shadow copy of user chat history.
+Treat the conversation as the only Player-visible retention root, retain transcript continuity for 12 months after last activity, purge derived memory and relationship state within 30 days after confirmed deletion, keep audit traces on a separate 90-day metadata-first policy, and keep delete initiation internal or admin-managed for the phase 1 MVP.

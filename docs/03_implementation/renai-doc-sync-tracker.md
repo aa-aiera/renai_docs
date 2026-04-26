@@ -15,10 +15,10 @@ Use this tracker to see which role is aligned to the latest upstream document ve
 ## Status Register
 | Role | Scope | Current Version | Upstream Version | Sync Status | Progress | Last Updated | Next Action |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| PM | `docs/01_requirements/renai-game-llm-prd.md` | `v1.0` | `n/a` | `aligned` | `100%` | `2026-04-26` | Update the PRD version and change log on the next requirement change. |
-| SA | Architecture packet under `docs/02_architecture/` | `v1.0` | `PRD v1.0` | `aligned` | `100%` | `2026-04-26` | Re-open architecture sync only when the PRD version changes or a new architecture artifact is introduced. |
-| TL | Planning packet under `docs/03_implementation/` | `v1.0` | `Architecture v1.0` | `aligned` | `100%` | `2026-04-26` | Keep the blueprint, API contracts, backlog, and task artifact aligned to the next architecture revision. |
-| Implementor | Execution backlog and task artifact | `v1.0` | `Planning v1.0` | `ready-to-start` | `0%` | `2026-04-26` | Start with `M0` decisions and use the Implementor Execution Tracker agent to keep task statuses and progress updates aligned. |
+| PM | `docs/01_requirements/renai-game-llm-prd.md` | `v3.0.2` | `n/a` | `aligned` | `100%` | `2026-04-26` | Capture the next requirement change with the same document-control and change-log discipline under the three-part version format. |
+| SA | Architecture packet under `docs/02_architecture/` | `v1.1.0` | `PRD v3.0.2` | `aligned` | `100%` | `2026-04-26` | Hand off the synced architecture packet to TL and preserve the current Player, MC, non-explicit hosted-model, and lifecycle baseline in future architecture revisions. |
+| TL | Planning packet under `docs/03_implementation/` | `v1.2.2 core / v1.0.0 support docs` | `Architecture v1.1.0` | `aligned` | `100%` | `2026-04-26` | Preserve the strict scaffold, naming, env-template, checklist, and skeleton-starter baseline while moving execution into repository scaffolding and initial config creation. |
+| Implementor | Execution backlog, scaffold support docs, and task artifact | `v1.2.2 core / v1.0.0 support docs` | `Planning v1.2.2 core / v1.0.0 support docs` | `ready-to-start` | `0%` | `2026-04-26` | Start M1 scaffolding with the exact React, Go, PostgreSQL, Redis, RabbitMQ, cookie-session, env-template, checklist, and skeleton-starter baseline; do not reintroduce guest chat, explicit hosted-model behavior, or Player-facing delete in phase 1. |
 
 ## Included Artifacts
 
@@ -39,10 +39,14 @@ Use this tracker to see which role is aligned to the latest upstream document ve
 - `docs/03_implementation/renai-game-llm-mvp-api-contract-drafts.md`
 - `docs/03_implementation/renai-game-llm-mvp-execution-backlog.md`
 - `docs/03_implementation/renai-game-llm-mvp-implementation-blueprint.md`
+- `docs/03_implementation/renai-game-llm-mvp-m1-scaffold-checklist.md`
+- `docs/03_implementation/renai-game-llm-mvp-repo-skeleton-starter.md`
 - `docs/03_implementation/renai-game-llm-mvp-task-artifact.json`
 
 ### Implementor Scope
 - `docs/03_implementation/renai-game-llm-mvp-execution-backlog.md`
+- `docs/03_implementation/renai-game-llm-mvp-m1-scaffold-checklist.md`
+- `docs/03_implementation/renai-game-llm-mvp-repo-skeleton-starter.md`
 - `docs/03_implementation/renai-game-llm-mvp-task-artifact.json`
 - `.github/agents/implementor-execution.agent.md`
 

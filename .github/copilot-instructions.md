@@ -6,10 +6,14 @@ When you create or update documents in this workspace, preserve change traceabil
 
 ## Versioning Standard
 
-- Use document versions in `v<major>.<minor>` format.
-- A major version bump is required when a change invalidates or materially reshapes the current system direction. Examples: scope changes, workflow changes, new or removed capabilities, safety or policy posture changes, data-model-impacting changes, or any requirement change that forces downstream redesign.
-- A minor version bump is required for compatible refinements. Examples: clarified wording, added acceptance criteria, scoped details, non-breaking constraints, or decisions that do not force downstream redesign.
-- If a document has no version yet, initialize it at `v1.0` when it first enters managed change control.
+- Use document versions in `v<release_version>.<major_change>.<minor_change>` format.
+- `release_version` identifies the active release line or release baseline for the document set.
+- `major_change` increments when a change invalidates or materially reshapes the current system direction within the same release line. Examples: scope changes, workflow changes, new or removed capabilities, safety or policy posture changes, data-model-impacting changes, or any requirement change that forces downstream redesign.
+- `minor_change` increments for compatible refinements within the same release line and major-change baseline. Examples: clarified wording, added acceptance criteria, scoped details, non-breaking constraints, terminology cleanup, or decisions that do not force downstream redesign.
+- When `release_version` increments, reset `major_change` and `minor_change` to `0`.
+- When `major_change` increments, reset `minor_change` to `0`.
+- If a document has no version yet, initialize it at `v1.0.0` when it first enters managed change control.
+- When an existing managed document still uses the legacy two-part format, convert it to the three-part format the next time that document is updated by appending a trailing `.0` before applying the new bump logic.
 
 ## PRD Requirements
 

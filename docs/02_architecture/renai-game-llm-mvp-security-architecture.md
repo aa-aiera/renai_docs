@@ -2,275 +2,157 @@
 
 ## Document Control
 - Status: Draft Architecture Companion
-- Version: v1.0
+- Version: v1.1.0
 - Last Updated: 2026-04-26
 - Owner: SA
 
 ## Change Log
 | Date | Version | Change Type | Summary | Downstream Impact |
 | --- | --- | --- | --- | --- |
-| 2026-04-26 | v1.0 | Major | Established the security companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should continue to treat these controls as part of the Architecture v1.0 baseline. |
+| 2026-04-26 | v1.1.0 | Major | Reconciled the security model to PRD v3.0.2 by removing guest-session security assumptions, aligning to login-required chat, and enforcing the hosted-model non-explicit plus admin-managed deletion baseline. | Planning and implementation work must remove guest-surface controls and focus on authenticated session security, lifecycle-safe workers, and metadata-first audit handling. |
+| 2026-04-26 | v1.0.0 | Major | Established the security companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should continue to treat these controls as part of the Architecture v1.0.0 baseline. |
 
 ## Upstream Baseline
-- Based On: Phase 1 MVP PRD v1.0 and MVP architecture packet v1.0
+- Based On: Phase 1 MVP PRD v3.0.2 and MVP architecture packet v1.1.0
 
 ## Executive Summary
-This document defines the phase 1 security architecture for the renai-game-style LLM MVP. The system handles conversational data, guest and authenticated identity state, relationship signals, provider credentials, and safety-sensitive model interactions. The phase 1 security design therefore focuses on trust boundaries, access control, session integrity, secret handling, abuse resistance, and secure operational review.
-
-The architecture remains intentionally simple for the MVP, but it must still ensure:
-- no direct browser access to the LLM provider
-- strict ownership checks for guest and authenticated conversations
-- server-side control of delayed replies and background jobs
-- minimized audit payloads
-- security controls that work alongside the safety and policy layer
+This document defines the phase 1 security architecture for the renai-game-style LLM MVP. The security model now centers on authenticated Player sessions, strict Player-MC conversation ownership, hosted-model non-explicit policy enforcement, lifecycle-safe async jobs, server-side provider isolation, and metadata-first audit review.
 
 ## Source Notes
 - `docs/01_requirements/renai-game-llm-prd.md`
 - `docs/02_architecture/renai-game-llm-mvp-hld.md`
-- `docs/02_architecture/renai-game-llm-mvp-erd.md`
-- `docs/02_architecture/renai-game-llm-mvp-sequence-flows.md`
-- `docs/02_architecture/renai-game-llm-mvp-component-diagrams.md`
 - `docs/02_architecture/renai-game-llm-mvp-privacy-retention-architecture.md`
 - `docs/02_architecture/adr-0001-phase1-hosted-model-adult-content-fallback.md`
 
-## Problem Statement
-The MVP is not a simple stateless chat proxy. It maintains identity-linked continuity, memory, relationship state, delayed reply jobs, and provider credentials. That creates a security surface that includes unauthorized chat access, guest abuse, session confusion between guest and authenticated states, prompt or provider misuse, secret leakage, and over-retention of sensitive conversational data.
-
-## Scope
-This document covers:
-- trust boundaries and system zones
-- guest and authenticated session security
-- conversation ownership and authorization rules
-- provider credential and secret handling
-- abuse prevention and rate controls
-- audit and privileged access boundaries
-- lifecycle-aware security checks for deletion and purge
-
-This document does not cover:
-- detailed cryptographic implementation choices
-- vendor-specific WAF or CDN configuration
-- legal compliance advice
-- future native mobile application security design
-
 ## Security Goals
-- prevent unauthorized access to conversation, memory, and relationship data
-- prevent client-side exposure of provider credentials or internal job endpoints
-- maintain separation between guest-owned and authenticated-owned data
-- block delayed job execution against expired or deleted ownership scopes
-- minimize privileged access to raw conversational data
-- keep abuse resistance strong enough for a public MVP surface
+- Ensure only the owning authenticated Player can access a conversation.
+- Prevent direct client access to the hosted provider and provider credentials.
+- Prevent async replies and derived-state updates from acting on deleted scopes.
+- Keep audit traces operationally useful without duplicating transcript storage.
+- Enforce the approved non-explicit hosted-model content posture.
 
-## Trust Zones And Boundaries
-```mermaid
-flowchart LR
-    Player[Player Browser]
-    Admin[Admin Or Operations User]
+## Trust Boundaries
+| Boundary | Security Expectation |
+| --- | --- |
+| Browser to Backend API | authenticated session required for chat operations; no trust in client-owned ownership claims |
+| Backend API to Database | server-side ownership and lifecycle checks on every sensitive operation |
+| Backend API and Worker to Provider | provider credentials remain server-only; requests flow through the provider adapter |
+| Worker to Queue / Cache | only approved job payloads are executable; lifecycle recheck required before side effects |
+| Internal/Admin Operations to Product Data | privileged access is separate from Player-facing flows and should be auditable |
 
-    subgraph PublicZone[Public Client Zone]
-        Browser[Responsive Browser Client]
-    end
+## Authentication And Session Security
+### Player Identity
+- Facebook is the only active phase 1 identity provider.
+- Chat creation, message send, and conversation restore require an authenticated Player session.
+- Session validation must happen server-side for every chat read or write.
 
-    subgraph AppZone[Application Zone]
-        API[Backend API / BFF]
-        Worker[Async Worker]
-    end
-
-    subgraph DataZone[Data Zone]
-        DB[(Relational Database)]
-        Cache[(Queue / Cache)]
-        Audit[(Audit Store / Audit Rows)]
-    end
-
-    subgraph ExternalZone[External Dependencies]
-        Facebook[Facebook OAuth]
-        LLM[Hosted LLM Provider]
-    end
-
-    Player --> Browser
-    Browser --> API
-    API --> Facebook
-    API --> DB
-    API --> Cache
-    Worker --> Cache
-    Worker --> DB
-    Worker --> LLM
-    API --> LLM
-    DB --> Audit
-    Admin --> API
-```
-
-### Boundary Rules
-- the browser talks only to the backend API surface
-- the browser never talks directly to the hosted LLM provider
-- the worker is trusted only for scheduled and internal job execution
-- admin or operations access must be separate from normal player access paths
-
-## Security Principles
-- enforce ownership at the conversation root
-- keep provider credentials server-side only
-- minimize retained sensitive data
-- recheck lifecycle state before asynchronous execution
-- prefer least-privilege access between runtime roles
-- separate user-facing chat history from audit-oriented traces
-
-## Asset Classes
-### Identity And Session Assets
-- guest session identifiers
-- authenticated account identity
-- provider identity links
-- age-confirmation timestamps
-
-### Conversational Assets
-- messages
-- short-term context
-- long-term memory
-- relationship state
-
-### Operational And Secret Assets
-- provider API credentials
-- queue or cache credentials
-- admin access credentials
-- audit traces and safety events
-
-## Identity And Session Security Architecture
-### Guest Sessions
-Guest sessions are public-entry identity contexts with limited trust.
-
-Security requirements:
-- guest session identifiers must be treated as server-validated state, not as trusted standalone authority
-- guest state must remain isolated from authenticated account data
-- guest sessions must expire and become ineligible for further writes after lifecycle end
-- the 10-input limit should be enforced server-side, not only in the client
-
-### Authenticated Sessions
-Authenticated identity begins with Facebook in phase 1.
-
-Security requirements:
-- Facebook identity must resolve into an internal account model
-- authorization checks must use internal account ownership, not raw provider identifiers
-- guest login reset must not accidentally merge guest data into authenticated continuity
-
-### Session Transition Boundary
-Guest-to-authenticated transition is a security boundary as well as a product boundary.
-
-Rule:
-On login, the new authenticated session starts with authenticated ownership only. Guest-owned conversations, memory, and relationship state must not become reachable through the authenticated session.
+### Session Requirements
+- Session tokens or cookies must be integrity-protected and server-validated.
+- Session expiration and invalidation must be enforced consistently in API and worker lookups.
+- Player identity must not be inferred from client-submitted conversation identifiers alone.
 
 ## Authorization Model
-### Conversation Ownership Rule
-Every conversation belongs to exactly one ownership scope:
-- one `GuestSession`, or
-- one `UserAccount`
+### Conversation Access Rule
+Every conversation access path must verify:
+1. the requester is authenticated
+2. the requester resolves to the owning `player_account_id`
+3. the conversation is still in an accessible lifecycle state
 
-### Authorization Requirement
-Every read, write, delayed-reply execution, and background update must verify that:
-- the caller or worker is operating on the correct ownership scope
-- the conversation is still active and not soft-deleted or purge-pending
+### Lifecycle-Safe Authorization
+- `soft-deleted` and `purge-pending` conversations are not readable or writable in normal Player flows
+- worker execution must treat those states as hard stops
 
-### Derived Data Rule
-`ShortTermContext`, `LongTermMemory`, and `RelationshipState` are not independent authorization roots. Access to them is always mediated through conversation ownership.
+## Hosted-Model Content Security
+### Approved Posture
+Phase 1 uses a hosted public model in a non-explicit romance mode only.
 
-## Provider And Secret Security
-### Hosted LLM Provider Boundary
-The provider adapter is the only approved provider integration boundary.
+### Controls
+- policy checks run before generation and after generation
+- disallowed explicit sexual content is blocked or rewritten server-side
+- provider output is never trusted without post-generation validation
+- no phase 1 endpoint attempts to unlock explicit adult sexual content
 
-Security requirements:
-- provider credentials remain server-side only
-- raw provider credentials are unavailable to the browser
-- provider request construction happens inside backend or worker-controlled modules only
-- provider responses pass through policy and safety validation before persistence
+## Data Protection Controls
+### Sensitive Data Categories
+- Player identity and provider link data
+- conversation transcript and delayed reply state
+- memory summaries and relationship metrics
+- audit and abuse-review traces
 
-### Secret Management Requirements
-Recommendation:
-- use environment-managed or secret-store-managed credentials rather than source-controlled values
-- separate secret scopes for API, worker, database, and provider access where practical
-- support credential rotation without redesigning module boundaries
+### Protection Rules
+- secrets remain server-side only
+- transcript and derived memory access are scoped by conversation ownership
+- audit traces are separated from Player-facing transcript storage
+- retention and purge rules are enforced as security controls, not just privacy preferences
 
-## Data Protection And Lifecycle Security
-### Ownership-Cascade Security
-Deletion and purge are security-relevant because stale derived memory can leak personal or behavioral context even after raw chat access is removed.
+## Async And Worker Security
+### Delayed Reply Execution
+Before any worker generates or stores an MC reply, it must revalidate:
+- authenticated ownership context still exists
+- conversation is `active`
+- schedule has not been cancelled
 
-Rules:
-- deleting or purging a conversation must cascade to short-term context, long-term memory, relationship state, and scheduled replies
-- audit traces should retain only the minimum operational value necessary
-- guest-owned data must not survive as authenticated continuity
+### Purge And Cleanup Jobs
+- purge jobs must be idempotent
+- purge jobs must not recreate derived state after deletion
+- reply jobs and memory jobs must fail closed on missing or deleted ownership scopes
 
-### Delayed Reply Safety Check
-Before generating or delivering a delayed reply, the worker must recheck:
-- session or account ownership validity
-- conversation lifecycle state
-- policy mode and current gating constraints
+## Abuse Resistance
+### Primary Risks
+- session theft or misuse
+- conversation enumeration
+- replay or spam of message-send operations
+- provider misuse through malformed prompt requests
+- audit over-collection
 
-## Abuse Resistance And Public Surface Controls
-### Public Entry Risks
-- repeated guest-session creation
-- message spam or rapid retry behavior
-- abusive prompt attempts against safety boundaries
-- scraping or enumeration of character and conversation endpoints
+### Required Controls
+- rate limiting on auth and message endpoints
+- ownership checks on every conversation endpoint
+- server-side policy and provider validation
+- metadata-first audit emission
+- privileged access review for internal delete workflows
 
-### Recommended Controls
-- server-side guest quota enforcement
-- request rate limiting on identity, chat, and auth endpoints
-- ownership checks on all conversation access paths
-- stable error handling that does not reveal internal identifiers unnecessarily
-- audit events for repeated quota abuse, suspicious access attempts, and policy-triggered refusals
+## Operational Access
+### Internal Or Admin-Managed Delete
+Phase 1 deletion is not Player self-service.
 
-## Audit And Administrative Access
-### Audit Design Principle
-Audit data should support debugging, abuse review, and moderation without becoming an unrestricted shadow transcript store.
+Operational delete tooling must:
+- require privileged access
+- record audit traces for delete intent and purge completion
+- avoid exposing raw transcript data unnecessarily to operators
 
-### Administrative Access Rules
-- admin and operations access should be separated from player-facing identity flows
-- privileged review should prefer audit metadata and reason codes over unrestricted raw chat access
-- direct access to raw message history should be limited and justified
+### Audit Review Access
+Audit review should prefer reason codes, event metadata, and narrow evidence over broad transcript browsing.
 
-## Key Risks And Mitigations
+## Key Threat Scenarios
 ### 1. Unauthorized Conversation Access
 Risk:
-An attacker or broken client path accesses another user’s conversation.
+A client or attacker tries to read or write another Player's conversation.
 
-Mitigation:
-Use strict ownership checks based on internal conversation ownership, not client-provided identity hints.
+Control:
+Require server-side Player-to-conversation ownership validation on every request.
 
-### 2. Guest And Authenticated State Confusion
+### 2. Async Execution Against Deleted State
 Risk:
-Guest data becomes reachable after login because identity boundaries are enforced only in the UI.
+A delayed reply arrives after a conversation has been deleted.
 
-Mitigation:
-Keep guest and authenticated ownership distinct in persistence and authorization logic.
+Control:
+Recheck lifecycle state inside the worker before provider calls and persistence.
 
-### 3. Secret Exposure
+### 3. Hosted-Model Output Violates Product Posture
 Risk:
-Provider or infrastructure credentials leak through client code, logs, or admin handling.
+The provider emits content outside the approved non-explicit phase 1 boundary.
 
-Mitigation:
-Keep all provider and infrastructure credentials server-side and minimize secret distribution by role.
+Control:
+Enforce pre-generation and post-generation policy checks through the policy-safety module.
 
-### 4. Async Job Execution Against Deleted State
+### 4. Audit Over-Retention
 Risk:
-Delayed replies or background updates execute after a conversation is expired or purge-pending.
+Audit traces become a shadow transcript store.
 
-Mitigation:
-Require lifecycle-state rechecks before worker execution and make cleanup jobs idempotent.
-
-### 5. Audit Over-Collection
-Risk:
-Audit rows become a second full transcript store with broader access than the primary chat history.
-
-Mitigation:
-Prefer metadata-first audit payloads and narrow privileged access paths.
-
-## Assumptions
-- transport security is assumed for browser-to-backend and backend-to-external-provider communication
-- the exact session token or cookie mechanism remains stack-dependent and is not fixed in this document
-- admin tooling is not yet defined in phase 1, so this document specifies boundaries rather than interface details
-
-## Open Questions
-1. Which concrete session mechanism will phase 1 use for guest and authenticated browser state?
-2. Will phase 1 use a managed secret store, environment-level secret injection, or another secret-distribution mechanism?
-3. Should audit traces allow any narrow text excerpts, or should they remain metadata-only in phase 1?
-4. Will phase 1 expose any admin or moderation review surface, or remain engineering-only for privileged operations?
+Control:
+Keep audit payloads metadata-first and subject to the 90-day audit retention window.
 
 ## Recommendation Summary
 Recommendation:
-Keep the phase 1 security model simple but explicit: no direct client-to-provider calls, strict conversation-root authorization, server-side guest quota enforcement, lifecycle-state checks before async execution, server-only secret handling, and minimized privileged access to conversational data.
+Keep the phase 1 security model simple but explicit: authenticated Player sessions for chat, strict conversation-root authorization, server-only provider access, lifecycle-aware async execution, metadata-first audit storage, and hosted-model non-explicit policy enforcement as a required server-side control.

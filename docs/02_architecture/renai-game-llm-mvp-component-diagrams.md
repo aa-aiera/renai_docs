@@ -2,30 +2,31 @@
 
 ## Document Control
 - Status: Draft Component Diagram Companion
-- Version: v1.0
+- Version: v1.1.0
 - Last Updated: 2026-04-26
 - Owner: SA
 
 ## Change Log
 | Date | Version | Change Type | Summary | Downstream Impact |
 | --- | --- | --- | --- | --- |
-| 2026-04-26 | v1.0 | Major | Established the component diagram companion as a managed architecture artifact. | Technical Lead planning should assume these diagrams reflect the current Architecture v1.0 boundaries and deployment shape. |
+| 2026-04-26 | v1.1.0 | Major | Reconciled the component diagrams to PRD v3.0.2 by removing guest-mode structures, adopting Player and MC terminology, and showing the authenticated-only chat and lifecycle boundaries. | Sequence flows, API planning, and implementation modules should use these diagrams as the static reference for the updated runtime boundary. |
+| 2026-04-26 | v1.0.0 | Major | Established the component diagram companion as a managed architecture artifact. | Technical Lead planning should assume these diagrams reflect the current Architecture v1.0.0 boundaries and deployment shape. |
 
 ## Upstream Baseline
-- Based On: Phase 1 MVP PRD v1.0, MVP HLD v1.0, MVP ERD v1.0, and MVP Sequence Flows v1.0
+- Based On: Phase 1 MVP PRD v3.0.2, MVP HLD v1.1.0, MVP ERD v1.1.0, and MVP Sequence Flows v1.1.0
 
 ## Executive Summary
-This document provides visual component views for the phase 1 MVP system. It complements the written HLD, ERD, and runtime sequence flows by showing the static architecture boundaries, major internal modules, external dependencies, and deployment-oriented container layout.
+This document provides visual component views for the phase 1 MVP system. It complements the written HLD, ERD, and runtime sequence flows by showing the static architecture boundaries, major internal modules, external dependencies, and lifecycle ownership model for the authenticated-only phase 1 chat system.
 
 The diagrams are grounded in the approved MVP scope:
 - responsive browser client
-- Facebook-based returning identity
-- guest trial before login with a 10-input cap
-- one-on-one character chat only
+- Facebook-based Player identity
+- login required before chat
+- one-on-one Player-to-MC chat only
 - conversation-scoped memory
 - delayed reply scheduling
-- hosted public LLM in phase 1
-- local LLM migration path in phase 2
+- hosted public LLM in phase 1 with non-explicit romance only
+- admin-managed deletion and explicit retention windows
 
 ## Source Notes
 - `docs/01_requirements/renai-game-llm-prd.md`
@@ -33,19 +34,6 @@ The diagrams are grounded in the approved MVP scope:
 - `docs/02_architecture/renai-game-llm-mvp-erd.md`
 - `docs/02_architecture/renai-game-llm-mvp-sequence-flows.md`
 - `docs/02_architecture/renai-game-llm-mvp-privacy-retention-architecture.md`
-
-## Scope
-This document includes:
-- system context diagram
-- phase 1 container and deployment view
-- backend module/component view
-- data and scheduling interaction view
-
-This document does not include:
-- endpoint-level API contracts
-- file-by-file implementation detail
-- premium billing systems
-- multi-provider identity linking implementation beyond the future architectural placeholder
 
 ## Diagram 1: System Context
 ### Purpose
@@ -68,9 +56,9 @@ flowchart LR
 ```
 
 ### Notes
-- The browser client is the only phase 1 user-facing runtime surface.
-- Facebook is the only active returning-identity provider in phase 1.
-- The hosted LLM provider is external to the MVP system boundary and is accessed through an internal provider abstraction layer.
+- The browser client is the only phase 1 Player-facing runtime surface.
+- Facebook is the only active identity provider in phase 1.
+- The hosted LLM provider is external to the product boundary and is accessed only through an internal adapter.
 
 ## Diagram 2: Phase 1 Container View
 ### Purpose
@@ -82,10 +70,10 @@ flowchart TB
         Browser[Responsive Browser Client]
     end
 
-    subgraph AppHost[Phase 1 Application Host]
-        API[Backend API / BFF Container]
-        Worker[Async Worker Container]
-        Cache[Queue and Cache Container]
+    subgraph AppHost[Phase 1 Application Runtime]
+        API[Backend API / BFF]
+        Worker[Async Worker]
+        Cache[Queue / Cache]
     end
 
     DB[(Relational Database)]
@@ -104,8 +92,8 @@ flowchart TB
 
 ### Notes
 - The API and worker are logically separate runtime components even if they live in the same codebase.
-- The queue/cache container supports delayed replies, transient counters, and short-latency job dispatch.
-- The relational database remains the system of record for identities, conversations, memories, and relationship state.
+- The queue/cache layer supports delayed replies, transient coordination, and purge dispatch.
+- The relational database remains the system of record for Players, MCs, conversations, messages, memories, relationship state, and audit traces.
 
 ## Diagram 3: Backend Component View
 ### Purpose
@@ -114,21 +102,25 @@ Shows the major internal components inside the modular monolith and how they col
 ```mermaid
 flowchart LR
     subgraph API[Backend API / BFF]
-        Identity[Identity Module]
-        Trial[Guest Trial Gate]
-        Catalog[Character Catalog Module]
-        Chat[Chat Orchestrator]
-        Policy[Policy and Safety Module]
+        Identity[Identity And Session Module]
+        Catalog[MC Catalog Module]
+        Conversations[Conversations Module]
+        Messages[Messages Module]
+        Chat[Chat Orchestration Module]
+        Policy[Policy And Safety Module]
         Memory[Memory Module]
         Relationship[Relationship Engine]
         Provider[Provider Adapter]
+        Audit[Audit Module]
     end
 
     subgraph Worker[Async Worker]
-        Scheduler[Delayed Reply Scheduler]
-        MemoryJobs[Memory Summarization Jobs]
-        ScoreJobs[Post-Reply Score Update Jobs]
-        AuditJobs[Audit / Observability Jobs]
+        Scheduler[Delayed Reply Executor]
+        ContextJobs[Short-Term Context Jobs]
+        MemoryJobs[Long-Term Memory Jobs]
+        ScoreJobs[Relationship Update Jobs]
+        PurgeJobs[Purge Jobs]
+        AuditJobs[Audit Jobs]
     end
 
     DB[(Relational Database)]
@@ -136,161 +128,75 @@ flowchart LR
     HostedLLM[Hosted Public LLM Provider]
 
     Identity --> DB
-    Trial --> DB
     Catalog --> DB
+    Conversations --> DB
+    Messages --> DB
     Chat --> Policy
     Chat --> Memory
     Chat --> Relationship
     Chat --> Provider
-    Chat --> DB
+    Chat --> Audit
     Chat --> Cache
-    Policy --> DB
-    Memory --> DB
-    Relationship --> DB
     Provider --> HostedLLM
 
     Scheduler --> Cache
     Scheduler --> DB
-    Scheduler --> Provider
     Scheduler --> Policy
     Scheduler --> Memory
     Scheduler --> Relationship
+    Scheduler --> Provider
+    ContextJobs --> DB
     MemoryJobs --> DB
     ScoreJobs --> DB
+    PurgeJobs --> DB
     AuditJobs --> DB
 ```
 
 ### Notes
-- `Chat Orchestrator` is the core coordination boundary for synchronous request handling.
-- `Delayed Reply Scheduler` in the worker is the core coordination boundary for asynchronous character replies.
-- `Provider Adapter` isolates Gemini or any other hosted provider from the rest of the product logic.
+- `Chat Orchestration Module` is the synchronous coordination boundary for Player message submission.
+- `Delayed Reply Executor` is the asynchronous coordination boundary for MC reply generation.
+- `Purge Jobs` exist because deletion is admin-managed and asynchronous in phase 1.
 
-## Diagram 4: Conversation State And Data Interaction View
+## Diagram 4: Ownership And Lifecycle View
 ### Purpose
-Shows how the main state objects relate to the runtime modules that create or update them.
+Shows how Player-facing transcript data, derived state, and audit traces relate to the conversation ownership root.
 
 ```mermaid
-flowchart LR
-    Identity[Identity Module]
-    Trial[Guest Trial Gate]
-    Chat[Chat Orchestrator]
-    Memory[Memory Module]
-    Relationship[Relationship Engine]
-    Scheduler[Delayed Reply Scheduler]
-    Policy[Policy and Safety Module]
-
-    User[(UserAccount)]
-    Guest[(GuestSession)]
-    Character[(CharacterProfile)]
+flowchart TB
+    Player[(PlayerAccount)]
+    MC[(MCProfile)]
     Conversation[(Conversation)]
     Message[(Message)]
     ShortTerm[(ShortTermContext)]
     LongTerm[(LongTermMemory)]
-    State[(RelationshipState)]
+    Relationship[(RelationshipState)]
     Reply[(ReplySchedule)]
-    Audit[(AuditEvent)]
+    Audit[(AuditTrace)]
 
-    Identity --> User
-    Identity --> Guest
-    Chat --> Character
-    Chat --> Conversation
-    Chat --> Message
-    Trial --> Guest
-    Memory --> ShortTerm
-    Memory --> LongTerm
-    Relationship --> State
-    Scheduler --> Reply
-    Policy --> Audit
-    Chat --> Audit
-    Scheduler --> Message
-    Scheduler --> Audit
+    Player --> Conversation
+    MC --> Conversation
+    Conversation --> Message
+    Conversation --> ShortTerm
+    Conversation --> LongTerm
+    Conversation --> Relationship
+    Conversation --> Reply
+    Conversation -. separate retention domain .-> Audit
 ```
 
 ### Notes
-- `Conversation` is the anchor for all conversation-scoped state.
-- `LongTermMemory` and `RelationshipState` are intentionally separate so one remains narrative and the other remains structured.
-- `AuditEvent` exists as a cross-cutting trace sink for policy, scoring, and delayed-reply actions.
+- `Conversation` is the ownership and deletion root for transcript data and derived state.
+- `AuditTrace` is retained separately and should remain metadata-first.
+- No guest-session ownership path exists in phase 1.
 
-## Diagram 5: Identity And Guest Access Boundary
-### Purpose
-Shows the separation between guest and authenticated usage, including the approved reset-at-login behavior.
-
-```mermaid
-flowchart TB
-    GuestUser[Guest User]
-    AuthUser[Authenticated User]
-    Trial[Guest Trial Gate]
-    GuestSession[(GuestSession)]
-    GuestConversation[(Guest Conversation)]
-    Login[Facebook Login]
-    UserAccount[(UserAccount)]
-    AuthConversation[(Authenticated Conversation)]
-
-    GuestUser --> Trial
-    Trial --> GuestSession
-    Trial --> GuestConversation
-    GuestUser --> Login
-    Login --> UserAccount
-    UserAccount --> AuthUser
-    AuthUser --> AuthConversation
-
-    GuestConversation -. reset, no transfer .-> AuthConversation
-```
-
-### Notes
-- This is a product-rule boundary, not just a UI choice.
-- Guest trial state and authenticated state must remain separate in phase 1.
-
-## Diagram 6: Provider Abstraction And Future Migration Path
-### Purpose
-Shows how the system stays provider-portable between phase 1 hosted LLM usage and future local LLM migration.
-
-```mermaid
-flowchart LR
-    Chat[Chat Orchestrator]
-    Worker[Async Worker]
-    Provider[Provider Adapter]
-    Hosted[Hosted Public LLM]
-    Local[Future Local LLM]
-
-    Chat --> Provider
-    Worker --> Provider
-    Provider --> Hosted
-    Provider -. phase 2 migration path .-> Local
-```
-
-### Notes
-- No product-facing module should depend directly on a specific LLM provider SDK.
-- The provider adapter is the migration seam for phase 2.
-
-## Architectural Boundaries
-### Stable MVP Boundaries
+## Stable MVP Boundaries
 - one browser client
 - one modular monolith backend codebase
 - one async worker role
 - one relational source of truth
-- no shared-world memory
-- no cross-character memory
-- conversation-owned lifecycle controls govern memory, relationship, and scheduled-reply cleanup
-
-### Planned Future Extension Boundaries
-- linked multi-provider identity
-- local LLM support
-- premium-visible score display
-- possible later decomposition of worker-heavy responsibilities
-
-## Diagram Interpretation Guidance
-### How To Read These Diagrams
-- The system context diagram answers who is outside the MVP system.
-- The container view answers what runs in phase 1.
-- The backend component view answers which backend modules own which concerns.
-- The data interaction view answers which modules write or read which major entities.
-- The identity boundary diagram clarifies the guest-reset rule.
-- The provider abstraction diagram shows the deliberate seam for phase 2 migration.
-
-## Open Questions
-1. Can the phase 1 hosted model and provider policy support the intended adult-content policy for players who confirm they are 18+, or must adult sexual content wait for a later phase or local model?
+- no guest or anonymous chat path
+- no cross-MC memory
+- no explicit adult sexual content in phase 1 hosted mode
 
 ## Recommendation Summary
 Recommendation:
-Use these component diagrams as the static visual reference for implementation planning and technical discussion. Together with the HLD, ERD, and sequence flows, they form a complete phase 1 architecture packet for downstream engineering handoff.
+Use these component diagrams as the static visual reference for implementation planning and technical review. Together with the HLD, ERD, and sequence flows, they describe the authenticated-only phase 1 system boundary approved by the current PRD.

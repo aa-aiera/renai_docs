@@ -1,120 +1,66 @@
 # ADR-0001 - Phase 1 Hosted Model Adult-Content Fallback
 
 ## Document Control
-- Status: Proposed ADR
-- Version: v1.0
+- Status: Accepted ADR
+- Version: v1.1.0
 - Last Updated: 2026-04-26
 - Owner: SA
 
 ## Change Log
 | Date | Version | Change Type | Summary | Downstream Impact |
 | --- | --- | --- | --- | --- |
-| 2026-04-26 | v1.0 | Major | Established the hosted-model adult-content fallback ADR as a managed architecture decision baseline. | Architecture and implementation planning should continue to treat this ADR as a required constraint for phase 1 hosted-model behavior. |
+| 2026-04-26 | v1.1.0 | Major | Converted the hosted-model adult-content fallback into the accepted phase 1 content posture: hosted public model operation is non-explicit only, with explicit adult sexual content deferred to a later local-model phase. | Architecture, API, implementation planning, and policy enforcement must align to the non-explicit hosted-model baseline and remove phase 1 adult-content enablement assumptions. |
+| 2026-04-26 | v1.0.0 | Major | Established the hosted-model adult-content fallback ADR as a managed architecture decision baseline. | Architecture and implementation planning should continue to treat this ADR as a required constraint for phase 1 hosted-model behavior. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v3.0.2
 
 ## Context
-The MVP PRD allows sexual content for players who confirm they are 18+ and interact with adult characters. However, the phase 1 technical plan also requires a hosted public model such as Gemini. Hosted public model policies may restrict or block the intended adult-content behavior even when the product itself permits it.
+The current PRD baseline requires phase 1 to run on a hosted public model such as Gemini, requires login before chat, and explicitly removes adult sexual content from the hosted-model MVP. Romance and friendship progression remain in scope, but explicit adult sexual content is deferred to a later local-model phase and requires separate approval before release.
 
-This creates a system-design risk:
-- the product policy expects one behavior
-- the hosted model provider may enforce a stricter one
-- the MVP must not depend on unsupported behavior to function
-
-The architecture packet already identifies this as an open question and recommends a policy capability switch.
+This ADR exists because the earlier product direction left adult-content behavior conditional on provider feasibility. That conditional state no longer exists. The product baseline is now explicit:
+- phase 1 hosted-model operation is non-explicit only
+- no phase 1 Player-facing feature depends on explicit adult sexual content
+- any future explicit-content capability belongs to a later local-model phase with a separate policy approval path
 
 ## Decision Drivers
-- phase 1 must remain deployable on a hosted public model
-- the MVP core loop must still work even if explicit adult-content behavior is blocked
-- the product must avoid a redesign when moving to a local LLM later
-- safety and provider-policy failures must degrade gracefully
+- Keep phase 1 behavior consistent with the approved PRD baseline.
+- Avoid building provider-dependent product behavior that the MVP no longer promises.
+- Reduce policy and moderation complexity during the first release.
+- Preserve a clean later migration path for stronger content control under a local model.
 
-## Considered Options
-### Option A: Assume Hosted Provider Supports Intended Adult Content
-Pros:
-- aligns most closely with the current product preference
-- no visible behavior restriction for confirmed 18+ players
+## Decision
+Phase 1 uses a hosted public model in a non-explicit romance mode only.
 
-Cons:
-- high risk of provider-policy mismatch
-- fragile MVP planning
-- could force late-stage product behavior changes
-
-Assessment:
-Rejected as the default planning assumption because it is too dependent on external policy.
-
-### Option B: Phase 1 Runs In Hosted-Safe-Mode Only
-Description:
-Phase 1 allows romance and friendship progression, but any explicit adult sexual content is suppressed while the system is on a hosted public model. Adult-content capability is deferred until provider feasibility is proven or a local model is adopted.
-
-Pros:
-- safest operational default
-- fully compatible with the current architecture
-- avoids provider-policy breakage in the MVP
-- preserves the core product loop
-
-Cons:
-- product behavior is narrower than the long-term vision
-- some 18+ content expectations are deferred
-
-Assessment:
-Recommended.
-
-### Option C: Move To Local LLM In Phase 1 To Preserve Adult Content
-Pros:
-- more direct control over policy behavior
-- better alignment with unrestricted content goals
-
-Cons:
-- conflicts with the approved phase 1 hosted-model plan
-- increases operational and model-serving complexity
-- likely slows MVP delivery
-
-Assessment:
-Rejected for phase 1.
-
-## Proposed Decision
-Use `hosted-safe-mode` as the default and mandatory phase 1 operating mode.
-
-This means:
-- the MVP may still collect a simple 18+ confirmation dialog
-- the product may still support romance progression for adult players
-- explicit adult sexual content must be treated as not guaranteed in phase 1
-- if the hosted model blocks or restricts that content, the system falls back to non-explicit romance and friendship behavior instead of failing the conversation
+The accepted architecture posture is:
+- romance and friendship progression are supported in phase 1
+- phase 1 MC behavior must remain non-explicit for all Players
+- no phase 1 endpoint, UI flow, or prompt path should attempt to unlock explicit adult sexual content
+- the provider adapter and policy layer may retain a future-facing capability seam, but only the non-explicit mode is enabled in phase 1
+- a later local-model phase may revisit explicit adult sexual content only after a separate age-gating, safety, and policy approval decision
 
 ## Consequences
 ### Positive
-- phase 1 remains viable on a hosted public model
-- architecture remains stable
-- provider-policy mismatch becomes a controlled fallback, not a delivery blocker
-- local LLM migration in phase 2 remains a clean upgrade path
+- Phase 1 policy behavior is simple and unambiguous.
+- Hosted-model provider constraints no longer create a product mismatch at runtime.
+- API and UI scope shrink because no phase 1 explicit-content unlock flow is required.
+- Safety testing focuses on non-explicit romance boundaries instead of dual-mode behavior.
 
 ### Negative
-- the phase 1 user experience for confirmed 18+ players may be narrower than originally desired
-- product messaging must avoid promising explicit adult-content behavior that phase 1 cannot reliably deliver
+- Some Players may expect more explicit romance behavior than the MVP provides.
+- A future local-model phase will still need a dedicated content-policy design pass.
 
-## Implementation Impact
-The system should implement a policy capability flag with at least these modes:
-- `hosted-safe-mode`
-- `adult-enabled-mode`
+### Neutral
+- MC profile metadata can still preserve age, persona, and relationship boundaries.
+- Provider portability remains important even though the immediate content posture is now fixed.
 
-Phase 1 default:
-- `hosted-safe-mode`
+## Implementation Implications
+- Remove any phase 1 planning assumption that a hosted provider might deliver approved explicit adult sexual content.
+- Do not require a Player-facing age-gating unlock flow for phase 1 explicit-content access, because explicit-content access does not exist in phase 1.
+- Enforce the hosted-model non-explicit posture inside the policy-safety module and provider orchestration path.
+- Keep later local-model explicit-content support out of the phase 1 critical path.
 
-Phase 2 possible path:
-- enable `adult-enabled-mode` only when provider feasibility or local-model control is confirmed
+## Decision Outcome
+Accepted.
 
-### Required Product Behavior In Hosted-Safe-Mode
-- no explicit adult sexual content is relied on for core progression
-- romance progression can continue in non-explicit form
-- refusal or soft-redirection must remain in-character and policy-compliant
-
-## Follow-Up Actions
-1. Reflect this fallback in implementation policy configuration.
-2. Keep explicit adult-content handling out of phase 1 acceptance criteria unless provider feasibility is confirmed.
-3. Re-evaluate this ADR when the local LLM phase becomes active.
-
-## Related Documents
-- `docs/01_requirements/renai-game-llm-prd.md`
-- `docs/02_architecture/renai-game-llm-mvp-hld.md`
-- `docs/02_architecture/renai-game-llm-mvp-sequence-flows.md`
-- `docs/03_implementation/renai-game-llm-mvp-implementation-blueprint.md`
-- `docs/03_implementation/renai-game-llm-mvp-api-contract-drafts.md`
+This ADR is now the source-of-truth architecture interpretation of the PRD rule that phase 1 hosted-model operation is non-explicit only.

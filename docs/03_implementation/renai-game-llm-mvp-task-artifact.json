@@ -3,9 +3,61 @@
   "generated_at": "2026-04-26",
   "artifact_type": "implementation_task_plan",
   "project": "Renai Game LLM MVP",
+  "planning_version": "v1.2.2",
+  "selected_stack": {
+    "browser_client": "React",
+    "backend_api": "Go",
+    "async_worker": "Go",
+    "relational_database": "PostgreSQL",
+    "cache": "Redis",
+    "queue": "RabbitMQ"
+  },
+  "selected_frameworks": {
+    "browser_toolchain": "React + TypeScript + Vite",
+    "client_routing": "React Router",
+    "client_server_state": "TanStack Query",
+    "client_local_state": "Zustand",
+    "go_http_router": "chi on net/http",
+    "request_validation": "go-playground/validator",
+    "postgres_access": "pgx + sqlc",
+    "schema_migrations": "goose",
+    "redis_client": "go-redis",
+    "rabbitmq_client": "amqp091-go",
+    "logging": "log/slog",
+    "go_test_assertions": "testify"
+  },
+  "selected_security_runtime": {
+    "session_transport": "Secure HttpOnly SameSite=Lax cookie with opaque session ID",
+    "session_store": "Redis",
+    "request_origin_protection": "Origin validation on state-changing requests",
+    "secret_distribution": "Managed secret store injected to backend and worker as environment variables",
+    "local_development_secret_handling": "Non-committed .env files for local development only"
+  },
+  "selected_scaffold_targets": [
+    "apps/web-client/package.json",
+    "apps/web-client/vite.config.ts",
+    "apps/web-client/tsconfig.json",
+    "apps/web-client/.env.example",
+    "apps/web-client/src/app/router.tsx",
+    "apps/web-client/src/app/providers.tsx",
+    "apps/web-client/src/app/queryClient.ts",
+    "services/backend-api/go.mod",
+    "services/backend-api/cmd/api/main.go",
+    "services/backend-api/sqlc.yaml",
+    "services/backend-api/db/migrations/0001_initial_schema.sql",
+    "services/backend-api/.env.example",
+    "services/worker/go.mod",
+    "services/worker/cmd/worker/main.go",
+    "services/worker/.env.example",
+    "infra/phase1/env-template/web-client.env.example",
+    "infra/phase1/env-template/backend-api.env.example",
+    "infra/phase1/env-template/worker.env.example",
+    "infra/phase1/env-template/shared.infra.env.example"
+  ],
   "source_documents": [
     "docs/03_implementation/renai-game-llm-mvp-implementation-blueprint.md",
     "docs/03_implementation/renai-game-llm-mvp-api-contract-drafts.md",
+    "docs/03_implementation/renai-game-llm-mvp-execution-backlog.md",
     "docs/02_architecture/renai-game-llm-mvp-hld.md",
     "docs/02_architecture/renai-game-llm-mvp-erd.md",
     "docs/02_architecture/renai-game-llm-mvp-sequence-flows.md",
@@ -14,16 +66,13 @@
     "docs/02_architecture/adr-0001-phase1-hosted-model-adult-content-fallback.md"
   ],
   "assumptions": [
-    "The implementation remains stack-neutral until the team selects the concrete client, backend, and worker frameworks.",
+    "The phase 1 technology baseline is React for the browser client, Go for backend API and worker services, PostgreSQL for relational storage, Redis for cache, and RabbitMQ for queue delivery.",
+    "The framework baseline is React + TypeScript + Vite with React Router, TanStack Query, and Zustand on the browser and chi-based Go services with pgx, sqlc, goose, go-redis, and amqp091-go on the backend.",
+    "The session baseline is a secure HttpOnly opaque cookie backed by Redis, and secrets are injected into backend and worker runtimes from a managed secret store.",
     "All implementation targets referenced in this artifact are proposed and do not yet exist in the repository.",
-    "Phase 1 follows the current hosted-safe-mode planning assumption unless the ADR is revised."
+    "Phase 1 chat is authenticated-only and the hosted public model operates in non-explicit mode only."
   ],
-  "open_questions": [
-    "Which concrete implementation stack will be chosen for the web client, backend API, worker, datastore, and queue/cache layer?",
-    "What exact retention durations should be assigned to guest-limited, account-durable, and audit-minimum classes?",
-    "Will phase 1 expose any user-facing delete capability, or remain internal/admin only?",
-    "Which concrete session mechanism and secret-distribution mechanism will the chosen stack use?"
-  ],
+  "open_questions": [],
   "milestones": [
     {
       "id": "M0",
@@ -35,9 +84,10 @@
         "IMP-003"
       ],
       "exit_criteria": [
-        "Stack mapping is confirmed for client, API, worker, datastore, and queue/cache.",
-        "Retention-duration and delete-exposure values are confirmed.",
-        "Session and secret-distribution approach is selected."
+        "Selected framework and library mapping is encoded inside the React, Go, PostgreSQL, Redis, and RabbitMQ baseline.",
+        "Exact scaffold files and env-template targets are encoded in the planning baseline.",
+        "Lifecycle constants and the internal delete operating model are encoded.",
+        "Selected cookie-session and secret-distribution approach is encoded."
       ]
     },
     {
@@ -55,12 +105,12 @@
       "exit_criteria": [
         "Repo structure and environment baseline exist.",
         "Core persistence schema is in place.",
-        "Character seed data and discovery shell are ready."
+        "MC seed data and discovery shell are ready."
       ]
     },
     {
       "id": "M2",
-      "title": "Core Chat Loop",
+      "title": "Authenticated Chat Loop",
       "depends_on": [
         "M1"
       ],
@@ -72,7 +122,7 @@
         "IMP-205"
       ],
       "exit_criteria": [
-        "Guest and authenticated message submission works.",
+        "Authenticated Player message submission works.",
         "Delayed reply scheduling and worker processing are operational.",
         "Provider access is isolated behind the adapter."
       ]
@@ -92,7 +142,7 @@
       "exit_criteria": [
         "Short-term context is refreshed asynchronously.",
         "Long-term memory remains conversation-scoped.",
-        "Relationship state and restore behavior work for one user-character pair."
+        "Relationship state and restore behavior work for one Player-MC pair."
       ]
     },
     {
@@ -108,8 +158,8 @@
         "IMP-404"
       ],
       "exit_criteria": [
-        "Hosted-safe-mode and age gates are enforced.",
-        "Lifecycle enforcement blocks writes and delayed replies for inactive scopes.",
+        "Hosted-model non-explicit policy and hard guardrails are enforced.",
+        "Lifecycle enforcement blocks inaccessible conversations and drives purge behavior.",
         "Audit payloads are minimized and abuse controls are active."
       ]
     },
@@ -135,7 +185,7 @@
     {
       "id": "IMP-001",
       "milestone_id": "M0",
-      "title": "Lock implementation stack mapping",
+      "title": "Encode selected framework and library baseline",
       "kind": "decision",
       "status": "planned",
       "depends_on": [],
@@ -146,30 +196,32 @@
         "infra/phase1/"
       ],
       "acceptance_criteria": [
-        "Selected stack mapping exists for client, API, worker, datastore, and queue/cache.",
-        "Selected stack does not require architecture changes to guest reset, delayed replies, or provider abstraction."
+        "Repo conventions encode React + TypeScript + Vite, React Router, TanStack Query, Zustand, chi, pgx, sqlc, goose, go-redis, and amqp091-go.",
+        "The scaffold explicitly names package.json, vite.config.ts, tsconfig.json, go.mod, sqlc.yaml, and cmd entrypoints for each deployable service.",
+        "Selected stack does not require architecture changes to authenticated chat, delayed replies, or provider abstraction."
       ]
     },
     {
       "id": "IMP-002",
       "milestone_id": "M0",
-      "title": "Confirm lifecycle and delete policy values",
+      "title": "Encode lifecycle constants and admin-delete operating model",
       "kind": "decision",
       "status": "planned",
       "depends_on": [],
       "proposed_paths": [
         "services/backend-api/config/",
+        "services/backend-api/modules/admin-lifecycle/",
         "infra/phase1/env-template/"
       ],
       "acceptance_criteria": [
-        "Retention durations exist for guest-limited, account-durable, and audit-minimum classes.",
-        "Delete exposure policy is documented for phase 1."
+        "Retention durations are encoded as 12 months for conversation history, 30 days for derived-state purge after confirmed deletion, and 90 days for audit-minimum traces.",
+        "Internal or admin-managed delete flow is documented for phase 1."
       ]
     },
     {
       "id": "IMP-003",
       "milestone_id": "M0",
-      "title": "Confirm session and secret-distribution approach",
+      "title": "Encode session and secret-distribution baseline",
       "kind": "decision",
       "status": "planned",
       "depends_on": [],
@@ -179,8 +231,9 @@
         "infra/phase1/env-template/"
       ],
       "acceptance_criteria": [
-        "Browser session mechanism is selected.",
-        "Secret-distribution approach is selected and consistent with server-only provider access."
+        "Browser session transport is a secure HttpOnly opaque cookie backed by Redis.",
+        "Env templates define browser, backend, worker, and shared infrastructure keys for session, PostgreSQL, Redis, RabbitMQ, Facebook auth, and the LLM provider.",
+        "Secret-distribution approach uses managed-secret injection and remains consistent with server-only provider access."
       ]
     },
     {
@@ -200,7 +253,8 @@
       ],
       "acceptance_criteria": [
         "Top-level app, service, worker, test, and infra structure exists.",
-        "Environment template placeholders are present for app, provider, datastore, and queue settings."
+        "Exact scaffold files from the implementation blueprint exist at the selected paths.",
+        "Environment template placeholders are present for app, provider, PostgreSQL, Redis, RabbitMQ, and lifecycle settings."
       ]
     },
     {
@@ -220,31 +274,31 @@
       ],
       "acceptance_criteria": [
         "Schema covers identity, conversations, messages, memories, relationship state, reply schedules, and audit entities.",
-        "Ownership and score constraints are enforced."
+        "Player-MC ownership and score constraints are enforced."
       ]
     },
     {
       "id": "IMP-103",
       "milestone_id": "M1",
-      "title": "Seed character catalog",
+      "title": "Seed MC catalog",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
         "IMP-102"
       ],
       "proposed_paths": [
-        "services/backend-api/modules/character-catalog/",
+        "services/backend-api/modules/mc-catalog/",
         "tests/fixtures/"
       ],
       "acceptance_criteria": [
-        "Aira, Lyra, and Nova are available as seedable character entries.",
-        "Seed data matches the PRD character definitions."
+        "Aira, Lyra, and Nova are available as seedable MC entries.",
+        "Seed data matches the PRD MC definitions."
       ]
     },
     {
       "id": "IMP-104",
       "milestone_id": "M1",
-      "title": "Build browser shell and discovery routes",
+      "title": "Build browser shell, discovery routes, and login entry",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -254,18 +308,19 @@
       "proposed_paths": [
         "apps/web-client/app-shell/",
         "apps/web-client/routes/home/",
-        "apps/web-client/routes/character-discovery/",
-        "apps/web-client/state/character-store/"
+        "apps/web-client/routes/mc-discovery/",
+        "apps/web-client/routes/auth/",
+        "apps/web-client/state/mc-store/"
       ],
       "acceptance_criteria": [
         "Responsive discovery flow supports mobile swipe and desktop list entry points.",
-        "Character selection can enter the chat flow."
+        "Authenticated Players can enter the chat flow from discovery surfaces."
       ]
     },
     {
       "id": "IMP-201",
       "milestone_id": "M2",
-      "title": "Implement guest bootstrap and Facebook auth entrypoints",
+      "title": "Implement session inspection and Facebook auth entrypoints",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -276,11 +331,12 @@
         "services/backend-api/modules/identity/",
         "services/backend-api/contracts/http/",
         "apps/web-client/routes/auth/",
-        "apps/web-client/services/session-client/"
+        "apps/web-client/services/session-client/",
+        "apps/web-client/services/auth-client/"
       ],
       "acceptance_criteria": [
-        "Guest session creation matches the API draft.",
-        "Facebook auth exchange resolves to internal account identity without migrating guest chat state."
+        "Session inspection matches the API draft.",
+        "Facebook auth exchange resolves to internal Player identity."
       ]
     },
     {
@@ -299,14 +355,14 @@
         "services/backend-api/contracts/http/"
       ],
       "acceptance_criteria": [
-        "Conversation resolve, load, and message send flows work with ownership checks.",
-        "Guest-limit enforcement is server-side."
+        "Conversation resolve, load, and message send flows work with authenticated ownership checks.",
+        "Conversation access fails closed for missing, deleted, or purge-pending scopes."
       ]
     },
     {
       "id": "IMP-203",
       "milestone_id": "M2",
-      "title": "Implement chat UI and polling or refresh behavior",
+      "title": "Implement authenticated chat UI and refresh behavior",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -317,11 +373,13 @@
         "apps/web-client/routes/chat/",
         "apps/web-client/services/chat-client/",
         "apps/web-client/state/conversation-store/",
+        "apps/web-client/components/auth-required-gate/",
         "apps/web-client/components/delayed-message-status/"
       ],
       "acceptance_criteria": [
-        "User messages can be sent from the chat screen.",
-        "Pending delay and delivered character replies can be rendered."
+        "Player messages can be sent from the chat screen.",
+        "Pending delay and delivered MC replies can be rendered.",
+        "Unauthenticated chat access is blocked with login-required UX."
       ]
     },
     {
@@ -339,14 +397,14 @@
         "services/backend-api/contracts/jobs/"
       ],
       "acceptance_criteria": [
-        "Accepted user messages create schedulable reply jobs.",
+        "Accepted Player messages create schedulable reply jobs.",
         "Worker can process due jobs from the selected queue or cache layer."
       ]
     },
     {
       "id": "IMP-205",
       "milestone_id": "M2",
-      "title": "Implement provider adapter",
+      "title": "Implement provider adapter and policy-mode hooks",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -354,11 +412,12 @@
         "IMP-204"
       ],
       "proposed_paths": [
-        "services/backend-api/modules/provider/"
+        "services/backend-api/modules/provider/",
+        "services/backend-api/modules/policy-safety/"
       ],
       "acceptance_criteria": [
         "Provider requests and responses are normalized behind one adapter boundary.",
-        "No browser path can access provider credentials directly."
+        "The approved non-explicit phase 1 mode can be enforced without exposing provider specifics to other modules."
       ]
     },
     {
@@ -396,7 +455,7 @@
       ],
       "acceptance_criteria": [
         "Salient facts and milestones are written asynchronously.",
-        "Long-term memory never crosses user-character boundaries."
+        "Long-term memory never crosses Player-MC conversation boundaries."
       ]
     },
     {
@@ -432,17 +491,18 @@
       "proposed_paths": [
         "services/backend-api/modules/conversations/",
         "apps/web-client/services/chat-client/",
-        "apps/web-client/routes/chat/"
+        "apps/web-client/routes/chat/",
+        "apps/web-client/components/conversation-list/"
       ],
       "acceptance_criteria": [
-        "Returning authenticated users can reopen the same character conversation.",
+        "Returning authenticated Players can reopen the same MC conversation.",
         "Memory and relationship continuity are restored for that conversation."
       ]
     },
     {
       "id": "IMP-401",
       "milestone_id": "M4",
-      "title": "Implement age confirmation and hosted-safe-mode policy gates",
+      "title": "Implement hosted-model non-explicit policy and hard guardrails",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -450,18 +510,17 @@
       ],
       "proposed_paths": [
         "services/backend-api/modules/policy-safety/",
-        "apps/web-client/components/age-confirmation-dialog/",
-        "apps/web-client/state/policy-store/"
+        "services/backend-api/modules/audit/"
       ],
       "acceptance_criteria": [
-        "Age confirmation and hard guardrails are enforced.",
-        "Hosted-safe-mode behavior is the active phase 1 fallback."
+        "Hard guardrails are enforced.",
+        "Hosted-model output remains within the approved non-explicit phase 1 posture."
       ]
     },
     {
       "id": "IMP-402",
       "milestone_id": "M4",
-      "title": "Implement lifecycle enforcement",
+      "title": "Implement lifecycle enforcement and admin-managed delete workflow",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -471,12 +530,14 @@
       ],
       "proposed_paths": [
         "services/backend-api/modules/conversations/",
-        "services/backend-api/modules/guest-trial/",
-        "services/worker/jobs/execute-delayed-reply/"
+        "services/backend-api/modules/admin-lifecycle/",
+        "services/worker/jobs/execute-delayed-reply/",
+        "services/worker/jobs/purge-conversation/"
       ],
       "acceptance_criteria": [
-        "Expired guest sessions and non-active conversations reject writes.",
-        "Delayed replies do not execute for expired, deleted, or purge-pending scopes."
+        "Deleted or purge-pending conversations reject reads and writes in normal Player flows.",
+        "Delayed replies do not execute for deleted or purge-pending scopes.",
+        "Owner-bound transcript and derived data are purged within the approved window."
       ]
     },
     {
@@ -501,7 +562,7 @@
     {
       "id": "IMP-404",
       "milestone_id": "M4",
-      "title": "Implement quota and abuse-resistance controls",
+      "title": "Implement auth rate limiting and abuse-resistance controls",
       "kind": "implementation",
       "status": "planned",
       "depends_on": [
@@ -509,13 +570,13 @@
         "IMP-202"
       ],
       "proposed_paths": [
-        "services/backend-api/modules/guest-trial/",
         "services/backend-api/config/",
-        "services/backend-api/modules/audit/"
+        "services/backend-api/modules/audit/",
+        "services/backend-api/modules/identity/"
       ],
       "acceptance_criteria": [
-        "Guest quota and rate controls are enforced server-side.",
-        "Suspicious access attempts and repeated quota abuse can be traced."
+        "Rate controls are enforced server-side.",
+        "Suspicious access attempts and repeated abuse patterns can be traced."
       ]
     },
     {
@@ -535,7 +596,7 @@
         "tests/end-to-end/"
       ],
       "acceptance_criteria": [
-        "Required guest, auth, delay, memory, relationship, policy, and lifecycle scenarios are covered.",
+        "Required auth, delay, memory, relationship, policy, lifecycle, and delete scenarios are covered.",
         "Test layers exist for module, integration, worker, and end-to-end behavior."
       ]
     },
@@ -554,7 +615,7 @@
         "tests/fixtures/"
       ],
       "acceptance_criteria": [
-        "Seeded environment validates discovery, chat, delayed replies, memory continuity, and policy enforcement.",
+        "Seeded environment validates discovery, login, chat, delayed replies, memory continuity, and policy enforcement.",
         "Observed failures are triaged before release readiness."
       ]
     },
@@ -574,7 +635,7 @@
       ],
       "acceptance_criteria": [
         "Release checklist exists for cost, latency, safety, and rollback review.",
-        "Observation baseline exists for provider errors, delayed replies, safety refusals, and guest-to-login conversion."
+        "Observation baseline exists for provider errors, delayed replies, safety refusals, and lifecycle events."
       ]
     }
   ]
