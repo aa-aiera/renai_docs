@@ -12,10 +12,14 @@ The blueprint is intentionally stack-neutral because the repository does not yet
 
 ## Source Notes
 - `docs/01_requirements/renai-game-llm-prd.md`
+- `docs/02_architecture/renai-game-llm-mvp-architecture-overview.md`
+- `docs/02_architecture/adr-0001-phase1-hosted-model-adult-content-fallback.md`
 - `docs/02_architecture/renai-game-llm-mvp-hld.md`
 - `docs/02_architecture/renai-game-llm-mvp-erd.md`
 - `docs/02_architecture/renai-game-llm-mvp-sequence-flows.md`
 - `docs/02_architecture/renai-game-llm-mvp-component-diagrams.md`
+- `docs/02_architecture/renai-game-llm-mvp-privacy-retention-architecture.md`
+- `docs/02_architecture/renai-game-llm-mvp-security-architecture.md`
 
 ## Scope
 This blueprint covers:
@@ -36,6 +40,11 @@ This blueprint does not cover:
 - shared-world memory or cross-character memory
 - production-grade explicit adult-content enablement on hosted models
 
+## Applied Planning Artifacts
+This blueprint is complemented by these execution-oriented artifacts:
+- `docs/03_implementation/renai-game-llm-mvp-execution-backlog.md`
+- `docs/03_implementation/renai-game-llm-mvp-task-artifact.json`
+
 ## Implementation Approach
 ### Recommended Delivery Shape
 - `web-client` application for the responsive browser UI
@@ -51,6 +60,8 @@ This blueprint does not cover:
 - Make delayed reply scheduling a backend-owned concern.
 - Keep provider-specific logic isolated behind a single adapter layer.
 - Treat guest chat state as disposable and non-migrating.
+- Enforce conversation lifecycle state before reply delivery, restore, or background update.
+- Keep provider, infrastructure, and privileged-access secrets server-side only.
 
 ## Proposed Top-Level File Tree
 The paths below are proposed and currently do not exist.
@@ -269,7 +280,20 @@ The implementation must realize at least these persistent entities from the ERD:
 - guest input count bounded to non-negative integers
 - no cross-character memory references
 
+### Required Lifecycle And Security Rules
+- guest session expiry must be enforced by API and worker paths
+- non-active conversations must reject new writes and delayed replies
+- derived memory and relationship state must cascade from conversation lifecycle
+- provider credentials must remain unavailable to the browser client
+- audit payloads should remain metadata-first and minimized
+
 ## Dependency Order
+### Wave 0: Decision Lock And Runtime Baseline
+- confirm implementation stack mapping for web client, backend API, worker, relational store, and queue or cache layer
+- confirm session mechanism and secret-distribution approach
+- confirm retention-duration and delete-exposure policy values
+- create repo scaffolding and environment template baseline
+
 ### Wave 1: Foundation
 - guest session support
 - Facebook login support
@@ -332,9 +356,10 @@ The implementation should align with a companion contract draft that includes:
 
 ## Open Questions
 1. Can the phase 1 hosted model and provider policy support the intended adult-content policy for players who confirm they are 18+, or must adult sexual content wait for a later phase or local model?
-2. Exact privacy, retention, inaccessible-state, and permanent-delete mechanics still need to be formalized in implementation-level rules.
+2. What concrete retention durations should be assigned to guest-limited, account-durable, and audit-minimum lifecycle classes at implementation time?
 3. The blueprint is stack-neutral because the repository does not yet define the concrete application framework for the client, backend, and worker.
+4. Which session and secret-distribution mechanisms will be used in the chosen implementation stack?
 
 ## Recommendation Summary
 Recommendation:
-Implement the MVP as a modular monolith plus async worker with a stack-neutral module structure that preserves the architecture boundaries already approved. Keep the provider integration isolated, the memory model conversation-scoped, and the guest-to-login reset rule enforced at both API and persistence levels.
+Implement the MVP as a modular monolith plus async worker with a stack-neutral module structure that preserves the architecture boundaries already approved. Keep the provider integration isolated, the memory model conversation-scoped, the guest-to-login reset rule enforced at both API and persistence levels, and execution aligned to the companion backlog and task artifact.

@@ -1,0 +1,581 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-04-26",
+  "artifact_type": "implementation_task_plan",
+  "project": "Renai Game LLM MVP",
+  "source_documents": [
+    "docs/03_implementation/renai-game-llm-mvp-implementation-blueprint.md",
+    "docs/03_implementation/renai-game-llm-mvp-api-contract-drafts.md",
+    "docs/02_architecture/renai-game-llm-mvp-hld.md",
+    "docs/02_architecture/renai-game-llm-mvp-erd.md",
+    "docs/02_architecture/renai-game-llm-mvp-sequence-flows.md",
+    "docs/02_architecture/renai-game-llm-mvp-privacy-retention-architecture.md",
+    "docs/02_architecture/renai-game-llm-mvp-security-architecture.md",
+    "docs/02_architecture/adr-0001-phase1-hosted-model-adult-content-fallback.md"
+  ],
+  "assumptions": [
+    "The implementation remains stack-neutral until the team selects the concrete client, backend, and worker frameworks.",
+    "All implementation targets referenced in this artifact are proposed and do not yet exist in the repository.",
+    "Phase 1 follows the current hosted-safe-mode planning assumption unless the ADR is revised."
+  ],
+  "open_questions": [
+    "Which concrete implementation stack will be chosen for the web client, backend API, worker, datastore, and queue/cache layer?",
+    "What exact retention durations should be assigned to guest-limited, account-durable, and audit-minimum classes?",
+    "Will phase 1 expose any user-facing delete capability, or remain internal/admin only?",
+    "Which concrete session mechanism and secret-distribution mechanism will the chosen stack use?"
+  ],
+  "milestones": [
+    {
+      "id": "M0",
+      "title": "Decision Lock And Runtime Baseline",
+      "depends_on": [],
+      "task_ids": [
+        "IMP-001",
+        "IMP-002",
+        "IMP-003"
+      ],
+      "exit_criteria": [
+        "Stack mapping is confirmed for client, API, worker, datastore, and queue/cache.",
+        "Retention-duration and delete-exposure values are confirmed.",
+        "Session and secret-distribution approach is selected."
+      ]
+    },
+    {
+      "id": "M1",
+      "title": "Foundation",
+      "depends_on": [
+        "M0"
+      ],
+      "task_ids": [
+        "IMP-101",
+        "IMP-102",
+        "IMP-103",
+        "IMP-104"
+      ],
+      "exit_criteria": [
+        "Repo structure and environment baseline exist.",
+        "Core persistence schema is in place.",
+        "Character seed data and discovery shell are ready."
+      ]
+    },
+    {
+      "id": "M2",
+      "title": "Core Chat Loop",
+      "depends_on": [
+        "M1"
+      ],
+      "task_ids": [
+        "IMP-201",
+        "IMP-202",
+        "IMP-203",
+        "IMP-204",
+        "IMP-205"
+      ],
+      "exit_criteria": [
+        "Guest and authenticated message submission works.",
+        "Delayed reply scheduling and worker processing are operational.",
+        "Provider access is isolated behind the adapter."
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Continuity State",
+      "depends_on": [
+        "M2"
+      ],
+      "task_ids": [
+        "IMP-301",
+        "IMP-302",
+        "IMP-303",
+        "IMP-304"
+      ],
+      "exit_criteria": [
+        "Short-term context is refreshed asynchronously.",
+        "Long-term memory remains conversation-scoped.",
+        "Relationship state and restore behavior work for one user-character pair."
+      ]
+    },
+    {
+      "id": "M4",
+      "title": "Policy, Lifecycle, And Security Hardening",
+      "depends_on": [
+        "M3"
+      ],
+      "task_ids": [
+        "IMP-401",
+        "IMP-402",
+        "IMP-403",
+        "IMP-404"
+      ],
+      "exit_criteria": [
+        "Hosted-safe-mode and age gates are enforced.",
+        "Lifecycle enforcement blocks writes and delayed replies for inactive scopes.",
+        "Audit payloads are minimized and abuse controls are active."
+      ]
+    },
+    {
+      "id": "M5",
+      "title": "Validation And Rollout",
+      "depends_on": [
+        "M4"
+      ],
+      "task_ids": [
+        "IMP-501",
+        "IMP-502",
+        "IMP-503"
+      ],
+      "exit_criteria": [
+        "Automated test layers cover required scenarios.",
+        "Seeded environment smoke validation passes.",
+        "Release checklist exists for cost, latency, safety, and rollback review."
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "IMP-001",
+      "milestone_id": "M0",
+      "title": "Lock implementation stack mapping",
+      "kind": "decision",
+      "status": "planned",
+      "depends_on": [],
+      "proposed_paths": [
+        "apps/web-client/",
+        "services/backend-api/",
+        "services/worker/",
+        "infra/phase1/"
+      ],
+      "acceptance_criteria": [
+        "Selected stack mapping exists for client, API, worker, datastore, and queue/cache.",
+        "Selected stack does not require architecture changes to guest reset, delayed replies, or provider abstraction."
+      ]
+    },
+    {
+      "id": "IMP-002",
+      "milestone_id": "M0",
+      "title": "Confirm lifecycle and delete policy values",
+      "kind": "decision",
+      "status": "planned",
+      "depends_on": [],
+      "proposed_paths": [
+        "services/backend-api/config/",
+        "infra/phase1/env-template/"
+      ],
+      "acceptance_criteria": [
+        "Retention durations exist for guest-limited, account-durable, and audit-minimum classes.",
+        "Delete exposure policy is documented for phase 1."
+      ]
+    },
+    {
+      "id": "IMP-003",
+      "milestone_id": "M0",
+      "title": "Confirm session and secret-distribution approach",
+      "kind": "decision",
+      "status": "planned",
+      "depends_on": [],
+      "proposed_paths": [
+        "services/backend-api/config/",
+        "services/worker/worker-entry/",
+        "infra/phase1/env-template/"
+      ],
+      "acceptance_criteria": [
+        "Browser session mechanism is selected.",
+        "Secret-distribution approach is selected and consistent with server-only provider access."
+      ]
+    },
+    {
+      "id": "IMP-101",
+      "milestone_id": "M1",
+      "title": "Scaffold repo structure and environment baseline",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-001"
+      ],
+      "proposed_paths": [
+        "apps/web-client/",
+        "services/backend-api/",
+        "services/worker/",
+        "infra/phase1/"
+      ],
+      "acceptance_criteria": [
+        "Top-level app, service, worker, test, and infra structure exists.",
+        "Environment template placeholders are present for app, provider, datastore, and queue settings."
+      ]
+    },
+    {
+      "id": "IMP-102",
+      "milestone_id": "M1",
+      "title": "Implement core persistence models and migrations",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-001",
+        "IMP-002"
+      ],
+      "proposed_paths": [
+        "services/backend-api/persistence/models/",
+        "services/backend-api/persistence/migrations/",
+        "services/backend-api/persistence/repositories/"
+      ],
+      "acceptance_criteria": [
+        "Schema covers identity, conversations, messages, memories, relationship state, reply schedules, and audit entities.",
+        "Ownership and score constraints are enforced."
+      ]
+    },
+    {
+      "id": "IMP-103",
+      "milestone_id": "M1",
+      "title": "Seed character catalog",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-102"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/character-catalog/",
+        "tests/fixtures/"
+      ],
+      "acceptance_criteria": [
+        "Aira, Lyra, and Nova are available as seedable character entries.",
+        "Seed data matches the PRD character definitions."
+      ]
+    },
+    {
+      "id": "IMP-104",
+      "milestone_id": "M1",
+      "title": "Build browser shell and discovery routes",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-101",
+        "IMP-103"
+      ],
+      "proposed_paths": [
+        "apps/web-client/app-shell/",
+        "apps/web-client/routes/home/",
+        "apps/web-client/routes/character-discovery/",
+        "apps/web-client/state/character-store/"
+      ],
+      "acceptance_criteria": [
+        "Responsive discovery flow supports mobile swipe and desktop list entry points.",
+        "Character selection can enter the chat flow."
+      ]
+    },
+    {
+      "id": "IMP-201",
+      "milestone_id": "M2",
+      "title": "Implement guest bootstrap and Facebook auth entrypoints",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-101",
+        "IMP-102"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/identity/",
+        "services/backend-api/contracts/http/",
+        "apps/web-client/routes/auth/",
+        "apps/web-client/services/session-client/"
+      ],
+      "acceptance_criteria": [
+        "Guest session creation matches the API draft.",
+        "Facebook auth exchange resolves to internal account identity without migrating guest chat state."
+      ]
+    },
+    {
+      "id": "IMP-202",
+      "milestone_id": "M2",
+      "title": "Implement conversations and messages API slice",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-102",
+        "IMP-201"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/conversations/",
+        "services/backend-api/modules/messages/",
+        "services/backend-api/contracts/http/"
+      ],
+      "acceptance_criteria": [
+        "Conversation resolve, load, and message send flows work with ownership checks.",
+        "Guest-limit enforcement is server-side."
+      ]
+    },
+    {
+      "id": "IMP-203",
+      "milestone_id": "M2",
+      "title": "Implement chat UI and polling or refresh behavior",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-104",
+        "IMP-202"
+      ],
+      "proposed_paths": [
+        "apps/web-client/routes/chat/",
+        "apps/web-client/services/chat-client/",
+        "apps/web-client/state/conversation-store/",
+        "apps/web-client/components/delayed-message-status/"
+      ],
+      "acceptance_criteria": [
+        "User messages can be sent from the chat screen.",
+        "Pending delay and delivered character replies can be rendered."
+      ]
+    },
+    {
+      "id": "IMP-204",
+      "milestone_id": "M2",
+      "title": "Implement delayed reply scheduler and worker bootstrap",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-202"
+      ],
+      "proposed_paths": [
+        "services/worker/worker-entry/",
+        "services/worker/jobs/execute-delayed-reply/",
+        "services/backend-api/contracts/jobs/"
+      ],
+      "acceptance_criteria": [
+        "Accepted user messages create schedulable reply jobs.",
+        "Worker can process due jobs from the selected queue or cache layer."
+      ]
+    },
+    {
+      "id": "IMP-205",
+      "milestone_id": "M2",
+      "title": "Implement provider adapter",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-202",
+        "IMP-204"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/provider/"
+      ],
+      "acceptance_criteria": [
+        "Provider requests and responses are normalized behind one adapter boundary.",
+        "No browser path can access provider credentials directly."
+      ]
+    },
+    {
+      "id": "IMP-301",
+      "milestone_id": "M3",
+      "title": "Implement short-term context refresh flow",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-202",
+        "IMP-204"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/memory/",
+        "services/worker/jobs/update-short-term-context/"
+      ],
+      "acceptance_criteria": [
+        "Recent context is condensed and available to reply generation.",
+        "Context remains conversation-scoped."
+      ]
+    },
+    {
+      "id": "IMP-302",
+      "milestone_id": "M3",
+      "title": "Implement long-term memory jobs",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-301",
+        "IMP-205"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/memory/",
+        "services/worker/jobs/update-long-term-memory/"
+      ],
+      "acceptance_criteria": [
+        "Salient facts and milestones are written asynchronously.",
+        "Long-term memory never crosses user-character boundaries."
+      ]
+    },
+    {
+      "id": "IMP-303",
+      "milestone_id": "M3",
+      "title": "Implement relationship state engine",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-202",
+        "IMP-205"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/relationship/",
+        "services/worker/jobs/update-relationship-state/"
+      ],
+      "acceptance_criteria": [
+        "Deterministic score updates and threshold hints are persisted.",
+        "Scores remain within approved bounds."
+      ]
+    },
+    {
+      "id": "IMP-304",
+      "milestone_id": "M3",
+      "title": "Implement restore and continuity flow",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-301",
+        "IMP-302",
+        "IMP-303"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/conversations/",
+        "apps/web-client/services/chat-client/",
+        "apps/web-client/routes/chat/"
+      ],
+      "acceptance_criteria": [
+        "Returning authenticated users can reopen the same character conversation.",
+        "Memory and relationship continuity are restored for that conversation."
+      ]
+    },
+    {
+      "id": "IMP-401",
+      "milestone_id": "M4",
+      "title": "Implement age confirmation and hosted-safe-mode policy gates",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-205"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/policy-safety/",
+        "apps/web-client/components/age-confirmation-dialog/",
+        "apps/web-client/state/policy-store/"
+      ],
+      "acceptance_criteria": [
+        "Age confirmation and hard guardrails are enforced.",
+        "Hosted-safe-mode behavior is the active phase 1 fallback."
+      ]
+    },
+    {
+      "id": "IMP-402",
+      "milestone_id": "M4",
+      "title": "Implement lifecycle enforcement",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-102",
+        "IMP-204",
+        "IMP-304"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/conversations/",
+        "services/backend-api/modules/guest-trial/",
+        "services/worker/jobs/execute-delayed-reply/"
+      ],
+      "acceptance_criteria": [
+        "Expired guest sessions and non-active conversations reject writes.",
+        "Delayed replies do not execute for expired, deleted, or purge-pending scopes."
+      ]
+    },
+    {
+      "id": "IMP-403",
+      "milestone_id": "M4",
+      "title": "Implement audit minimization and privileged trace boundaries",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-102",
+        "IMP-401"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/audit/",
+        "services/worker/jobs/emit-audit-events/"
+      ],
+      "acceptance_criteria": [
+        "Audit payloads are metadata-first.",
+        "Audit storage does not duplicate full transcripts unless explicitly required."
+      ]
+    },
+    {
+      "id": "IMP-404",
+      "milestone_id": "M4",
+      "title": "Implement quota and abuse-resistance controls",
+      "kind": "implementation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-201",
+        "IMP-202"
+      ],
+      "proposed_paths": [
+        "services/backend-api/modules/guest-trial/",
+        "services/backend-api/config/",
+        "services/backend-api/modules/audit/"
+      ],
+      "acceptance_criteria": [
+        "Guest quota and rate controls are enforced server-side.",
+        "Suspicious access attempts and repeated quota abuse can be traced."
+      ]
+    },
+    {
+      "id": "IMP-501",
+      "milestone_id": "M5",
+      "title": "Implement automated test layers",
+      "kind": "validation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-304",
+        "IMP-404"
+      ],
+      "proposed_paths": [
+        "services/backend-api/tests/",
+        "services/worker/tests/",
+        "tests/integration/",
+        "tests/end-to-end/"
+      ],
+      "acceptance_criteria": [
+        "Required guest, auth, delay, memory, relationship, policy, and lifecycle scenarios are covered.",
+        "Test layers exist for module, integration, worker, and end-to-end behavior."
+      ]
+    },
+    {
+      "id": "IMP-502",
+      "milestone_id": "M5",
+      "title": "Run seeded environment smoke validation",
+      "kind": "validation",
+      "status": "planned",
+      "depends_on": [
+        "IMP-501"
+      ],
+      "proposed_paths": [
+        "infra/phase1/docker-compose/",
+        "infra/phase1/app-config/",
+        "tests/fixtures/"
+      ],
+      "acceptance_criteria": [
+        "Seeded environment validates discovery, chat, delayed replies, memory continuity, and policy enforcement.",
+        "Observed failures are triaged before release readiness."
+      ]
+    },
+    {
+      "id": "IMP-503",
+      "milestone_id": "M5",
+      "title": "Prepare release checklist and observation baseline",
+      "kind": "release",
+      "status": "planned",
+      "depends_on": [
+        "IMP-502"
+      ],
+      "proposed_paths": [
+        "infra/phase1/env-template/",
+        "services/backend-api/config/",
+        "docs/03_implementation/"
+      ],
+      "acceptance_criteria": [
+        "Release checklist exists for cost, latency, safety, and rollback review.",
+        "Observation baseline exists for provider errors, delayed replies, safety refusals, and guest-to-login conversion."
+      ]
+    }
+  ]
+}
