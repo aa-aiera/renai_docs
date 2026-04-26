@@ -1,9 +1,15 @@
 # Renai Game Using LLM - Draft PRD
 
-## Document Status
-- Status: Phase 1 MVP PRD
-- Date: 2026-04-25
-- Owner: Product requirements session
+## Document Control
+- Status: Draft Phase 1 MVP PRD
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: PM
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the current phase 1 MVP PRD as the managed requirements baseline. | Architecture and implementation planning should track against PRD v1.0 until a newer requirements version is published. |
 
 ## Request Summary
 Create a renai-game-style experience (เกมส์จีบสาว / romance simulation) using an LLM.

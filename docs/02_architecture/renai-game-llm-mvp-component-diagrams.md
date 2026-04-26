@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Component Diagrams
 
-## Document Status
+## Document Control
 - Status: Draft Component Diagram Companion
-- Date: 2026-04-26
-- Based On: Phase 1 MVP PRD, MVP HLD, MVP ERD, and MVP Sequence Flows
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the component diagram companion as a managed architecture artifact. | Technical Lead planning should assume these diagrams reflect the current Architecture v1.0 boundaries and deployment shape. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0, MVP HLD v1.0, MVP ERD v1.0, and MVP Sequence Flows v1.0
 
 ## Executive Summary
 This document provides visual component views for the phase 1 MVP system. It complements the written HLD, ERD, and runtime sequence flows by showing the static architecture boundaries, major internal modules, external dependencies, and deployment-oriented container layout.

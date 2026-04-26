@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Architecture Overview And Index
 
-## Document Status
+## Document Control
 - Status: Draft Architecture Overview
-- Date: 2026-04-26
-- Based On: Phase 1 MVP PRD and complete architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the architecture overview as a managed entry point for the current architecture packet. | Technical Lead and Implementor should use Architecture v1.0 as the active packet baseline until a later architecture revision is published. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0 and complete architecture packet v1.0
 
 ## Executive Summary
 This document is the entry point for the renai-game-style LLM MVP architecture set. It summarizes the current system direction, identifies the source-of-truth documents for each architectural concern, and gives engineering, product, and review stakeholders a fast way to navigate the packet.

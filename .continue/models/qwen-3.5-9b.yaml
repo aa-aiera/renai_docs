@@ -1,0 +1,13 @@
+name: Qwen 3.5 9B
+version: 1.0.0
+schema: v1
+
+models:
+  - name: Qwen 3.5 9B
+    provider: openai
+    apiBase: http://localhost:1234/v1
+    model: qwen/qwen3.5-9b
+    roles:
+      - chat
+      - edit
+      - apply

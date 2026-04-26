@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Implementation Blueprint
 
-## Document Status
+## Document Control
 - Status: Draft Implementation Blueprint
-- Date: 2026-04-26
-- Based On: MVP PRD and phase 1 architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: TL
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the implementation blueprint as the managed planning baseline for the MVP. | API contracts, backlog updates, and implementor execution should continue to align to Planning v1.0 until a later planning revision is published. |
+
+## Upstream Baseline
+- Based On: MVP PRD v1.0 and phase 1 architecture packet v1.0
 
 ## Executive Summary
 This document translates the approved MVP product and architecture into a strict implementation blueprint for engineering handoff. The design target is a responsive browser client plus a modular monolith backend and an async worker, deployed on a medium-sized phase 1 environment.

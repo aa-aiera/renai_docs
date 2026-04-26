@@ -1,0 +1,13 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+
+models:
+  - uses: ./models/qwen-3.5-9b.yaml
+
+prompts:
+  - uses: ./prompts/pm.prompt.md
+  - uses: ./prompts/sa.prompt.md
+  - uses: ./prompts/tl.prompt.md
+  - uses: ./prompts/fr.prompt.md
+  

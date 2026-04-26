@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Data Model And ERD
 
-## Document Status
+## Document Control
 - Status: Draft ERD
-- Date: 2026-04-25
-- Based On: Phase 1 MVP PRD and MVP HLD
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the ERD as a managed architecture baseline for the MVP data model. | Technical Lead planning and any future implementation work should treat the ERD as the current Architecture v1.0 data-model baseline. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0 and MVP HLD v1.0
 
 ## Executive Summary
 This document defines the conceptual data model and entity relationships for the phase 1 MVP of the renai-game-style LLM chat product. The design reflects the approved product boundaries: one-on-one chat, user-character memory isolation, guest trial plus Facebook login, hidden relationship scores in phase 1, delayed replies, and no shared-world or cross-character memory.

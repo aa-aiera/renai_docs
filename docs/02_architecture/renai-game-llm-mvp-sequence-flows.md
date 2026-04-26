@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Sequence Flows
 
-## Document Status
+## Document Control
 - Status: Draft Sequence Flow Companion
-- Date: 2026-04-26
-- Based On: Phase 1 MVP PRD, MVP HLD, and MVP ERD
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the sequence-flow companion as a managed architecture artifact. | Technical Lead planning should continue to use these flows as part of the Architecture v1.0 runtime baseline. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0, MVP HLD v1.0, and MVP ERD v1.0
 
 ## Executive Summary
 This document captures the main runtime sequence flows for the phase 1 MVP system. It complements the HLD and ERD by showing how the browser client, backend modules, storage layers, scheduler, and LLM provider interact during the most important product journeys.

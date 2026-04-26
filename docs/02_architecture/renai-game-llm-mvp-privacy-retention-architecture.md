@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Privacy, Retention, And Data Lifecycle Architecture
 
-## Document Status
+## Document Control
 - Status: Draft Architecture Companion
-- Date: 2026-04-26
-- Based On: Phase 1 MVP PRD and MVP architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the privacy, retention, and lifecycle companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should preserve these lifecycle boundaries as part of Architecture v1.0. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0 and MVP architecture packet v1.0
 
 ## Executive Summary
 This document defines the phase 1 privacy, retention, and deletion architecture for the renai-game-style LLM product. The existing architecture packet already defines identity, conversation, memory, scheduling, and provider boundaries, but it leaves lifecycle rules under-specified. This companion closes that gap by defining how data should be classified, retained, expired, soft-deleted, hard-deleted, and kept auditable.

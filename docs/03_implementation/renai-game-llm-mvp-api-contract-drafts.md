@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - API Contract Drafts
 
-## Document Status
+## Document Control
 - Status: Draft API Contracts
-- Date: 2026-04-26
-- Based On: MVP PRD and phase 1 architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: TL
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the API contract drafts as a managed implementation-planning artifact. | Implementor execution should treat these contracts as part of the Planning v1.0 baseline until the architecture or planning packet changes. |
+
+## Upstream Baseline
+- Based On: MVP PRD v1.0 and phase 1 architecture packet v1.0
 
 ## Executive Summary
 This document defines draft API contracts for the phase 1 MVP browser client, backend API, and async worker job payloads. The contracts are intentionally transport- and stack-neutral at the schema level, but they assume a conventional HTTP JSON API between the browser and backend and queue-delivered JSON payloads between the backend and worker.

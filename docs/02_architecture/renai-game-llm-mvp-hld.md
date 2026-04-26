@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - High-Level Design
 
-## Document Status
+## Document Control
 - Status: Draft HLD
-- Date: 2026-04-25
-- Based On: Phase 1 MVP PRD
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the HLD as the managed high-level architecture baseline for the MVP. | Technical Lead planning artifacts should continue to align to HLD v1.0 until the architecture packet is revised. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0
 
 ## Executive Summary
 This document defines the high-level system architecture for the phase 1 MVP of the renai-game-style LLM chat product. The recommended design is a modular monolith with an asynchronous reply scheduler, a provider abstraction layer for hosted LLM access, isolated per-user-per-character memory, a deterministic relationship-state engine, and a policy layer that constrains unsafe or disallowed output.

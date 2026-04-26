@@ -1,10 +1,15 @@
 # ADR-0001 - Phase 1 Hosted Model Adult-Content Fallback
 
-## Status
-- Proposed
+## Document Control
+- Status: Proposed ADR
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
 
-## Date
-- 2026-04-26
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the hosted-model adult-content fallback ADR as a managed architecture decision baseline. | Architecture and implementation planning should continue to treat this ADR as a required constraint for phase 1 hosted-model behavior. |
 
 ## Context
 The MVP PRD allows sexual content for players who confirm they are 18+ and interact with adult characters. However, the phase 1 technical plan also requires a hosted public model such as Gemini. Hosted public model policies may restrict or block the intended adult-content behavior even when the product itself permits it.

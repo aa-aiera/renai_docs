@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Execution Backlog
 
-## Document Status
+## Document Control
 - Status: Draft Execution Backlog
-- Date: 2026-04-26
-- Based On: MVP implementation blueprint and architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: TL
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the execution backlog as a managed implementation-planning artifact. | Implementor execution should use this backlog as the Planning v1.0 source of truth for milestone sequencing and progress updates. |
+
+## Upstream Baseline
+- Based On: MVP implementation blueprint v1.0 and architecture packet v1.0
 
 ## Executive Summary
 This document applies the stack-neutral implementation blueprint to a sequenced execution backlog for engineering delivery. It is intended to be the working handoff plan for implementation readiness, milestone sequencing, and acceptance-driven delivery.

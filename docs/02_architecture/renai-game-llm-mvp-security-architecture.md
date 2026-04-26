@@ -1,9 +1,18 @@
 # Renai Game LLM MVP - Security Architecture
 
-## Document Status
+## Document Control
 - Status: Draft Architecture Companion
-- Date: 2026-04-26
-- Based On: Phase 1 MVP PRD and MVP architecture packet
+- Version: v1.0
+- Last Updated: 2026-04-26
+- Owner: SA
+
+## Change Log
+| Date | Version | Change Type | Summary | Downstream Impact |
+| --- | --- | --- | --- | --- |
+| 2026-04-26 | v1.0 | Major | Established the security companion as a managed architecture artifact. | Technical Lead planning and implementation tracking should continue to treat these controls as part of the Architecture v1.0 baseline. |
+
+## Upstream Baseline
+- Based On: Phase 1 MVP PRD v1.0 and MVP architecture packet v1.0
 
 ## Executive Summary
 This document defines the phase 1 security architecture for the renai-game-style LLM MVP. The system handles conversational data, guest and authenticated identity state, relationship signals, provider credentials, and safety-sensitive model interactions. The phase 1 security design therefore focuses on trust boundaries, access control, session integrity, secret handling, abuse resistance, and secure operational review.
